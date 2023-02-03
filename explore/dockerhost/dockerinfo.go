@@ -1,78 +1,4 @@
-/*
-Copyright 2023 6zacode-toolbox.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package v1
-
-import (
-	"time"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// DockerHostSpec defines the desired state of DockerHost
-type DockerHostSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of DockerHost. Edit dockerhost_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-}
-
-// DockerHostStatus defines the observed state of DockerHost
-type DockerHostStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	Containers []DockerContainerSummary `json:"containers,omitempty"`
-	HostInfo   DockerInfo               `json:"host,omitempty`
-}
-
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
-// DockerHost is the Schema for the dockerhosts API
-type DockerHost struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   DockerHostSpec   `json:"spec,omitempty"`
-	Status DockerHostStatus `json:"status,omitempty"`
-}
-
-//+kubebuilder:object:root=true
-
-// DockerHostList contains a list of DockerHost
-type DockerHostList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []DockerHost `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&DockerHost{}, &DockerHostList{})
-}
-
-type HostPlugins struct {
-	Volume        []string `json:"Volume"`
-	Network       []string `json:"Network"`
-	Authorization []string `json:"Authorization"`
-	Log           []string `json:"Log"`
-}
+package type
 
 type DockerInfo struct {
 	ID                 string           `json:"ID"`
@@ -82,7 +8,7 @@ type DockerInfo struct {
 	ContainersStopped  int              `json:"ContainersStopped"`
 	Images             int              `json:"Images"`
 	Driver             string           `json:"Driver"`
-	Plugins            HostPlugins      `json:"Plugins"`
+	Plugins            Plugins          `json:"Plugins"`
 	MemoryLimit        bool             `json:"MemoryLimit"`
 	SwapLimit          bool             `json:"SwapLimit"`
 	KernelMemory       bool             `json:"KernelMemory"`
@@ -113,12 +39,13 @@ type DockerInfo struct {
 	RegistryConfig     RegistryConfig   `json:"RegistryConfig"`
 	Ncpu               int              `json:"NCPU"`
 	MemTotal           int64            `json:"MemTotal"`
+	GenericResources   interface{}      `json:"GenericResources"`
 	DockerRootDir      string           `json:"DockerRootDir"`
 	HTTPProxy          string           `json:"HttpProxy"`
 	HTTPSProxy         string           `json:"HttpsProxy"`
 	NoProxy            string           `json:"NoProxy"`
 	Name               string           `json:"Name"`
-	Labels             []string         `json:"Labels"`
+	Labels             []interface{}    `json:"Labels"`
 	ExperimentalBuild  bool             `json:"ExperimentalBuild"`
 	ServerVersion      string           `json:"ServerVersion"`
 	Runtimes           Runtimes         `json:"Runtimes"`
@@ -131,31 +58,37 @@ type DockerInfo struct {
 	RuncCommit         RuncCommit       `json:"RuncCommit"`
 	InitCommit         InitCommit       `json:"InitCommit"`
 	SecurityOptions    []string         `json:"SecurityOptions"`
+	Warnings           interface{}      `json:"Warnings"`
 	ClientInfo         ClientInfo       `json:"ClientInfo"`
 }
-
+type Plugins struct {
+	Volume        []string    `json:"Volume"`
+	Network       []string    `json:"Network"`
+	Authorization interface{} `json:"Authorization"`
+	Log           []string    `json:"Log"`
+}
 type DockerIo struct {
-	Name     string   `json:"Name"`
-	Mirrors  []string `json:"Mirrors"`
-	Secure   bool     `json:"Secure"`
-	Official bool     `json:"Official"`
+	Name     string        `json:"Name"`
+	Mirrors  []interface{} `json:"Mirrors"`
+	Secure   bool          `json:"Secure"`
+	Official bool          `json:"Official"`
 }
 type HubproxyDockerInternal5000 struct {
-	Name     string   `json:"Name"`
-	Mirrors  []string `json:"Mirrors"`
-	Secure   bool     `json:"Secure"`
-	Official bool     `json:"Official"`
+	Name     string        `json:"Name"`
+	Mirrors  []interface{} `json:"Mirrors"`
+	Secure   bool          `json:"Secure"`
+	Official bool          `json:"Official"`
 }
 type IndexConfigs struct {
 	DockerIo                   DockerIo                   `json:"docker.io"`
 	HubproxyDockerInternal5000 HubproxyDockerInternal5000 `json:"hubproxy.docker.internal:5000"`
 }
 type RegistryConfig struct {
-	AllowNondistributableArtifactsCIDRs     []string     `json:"AllowNondistributableArtifactsCIDRs"`
-	AllowNondistributableArtifactsHostnames []string     `json:"AllowNondistributableArtifactsHostnames"`
-	InsecureRegistryCIDRs                   []string     `json:"InsecureRegistryCIDRs"`
-	IndexConfigs                            IndexConfigs `json:"IndexConfigs"`
-	Mirrors                                 []string     `json:"Mirrors"`
+	AllowNondistributableArtifactsCIDRs     []interface{} `json:"AllowNondistributableArtifactsCIDRs"`
+	AllowNondistributableArtifactsHostnames []interface{} `json:"AllowNondistributableArtifactsHostnames"`
+	InsecureRegistryCIDRs                   []string      `json:"InsecureRegistryCIDRs"`
+	IndexConfigs                            IndexConfigs  `json:"IndexConfigs"`
+	Mirrors                                 []interface{} `json:"Mirrors"`
 }
 type IoContainerdRuncV2 struct {
 	Path string `json:"path"`
@@ -172,12 +105,12 @@ type Runtimes struct {
 	Runc                       Runc                       `json:"runc"`
 }
 type Swarm struct {
-	NodeID           string   `json:"NodeID"`
-	NodeAddr         string   `json:"NodeAddr"`
-	LocalNodeState   string   `json:"LocalNodeState"`
-	ControlAvailable bool     `json:"ControlAvailable"`
-	Error            string   `json:"Error"`
-	RemoteManagers   []string `json:"RemoteManagers"`
+	NodeID           string      `json:"NodeID"`
+	NodeAddr         string      `json:"NodeAddr"`
+	LocalNodeState   string      `json:"LocalNodeState"`
+	ControlAvailable bool        `json:"ControlAvailable"`
+	Error            string      `json:"Error"`
+	RemoteManagers   interface{} `json:"RemoteManagers"`
 }
 type ContainerdCommit struct {
 	ID       string `json:"ID"`
@@ -204,21 +137,4 @@ type ClientInfo struct {
 	Debug   bool      `json:"Debug"`
 	Context string    `json:"Context"`
 	Plugins []Plugins `json:"Plugins"`
-}
-
-type DockerContainerSummary struct {
-	Command      string `json:"Command"`
-	CreatedAt    string `json:"CreatedAt"`
-	ID           string `json:"ID"`
-	Image        string `json:"Image"`
-	Labels       string `json:"Labels"`
-	LocalVolumes string `json:"LocalVolumes"`
-	Mounts       string `json:"Mounts"`
-	Names        string `json:"Names"`
-	Networks     string `json:"Networks"`
-	Ports        string `json:"Ports"`
-	RunningFor   string `json:"RunningFor"`
-	Size         string `json:"Size"`
-	State        string `json:"State"`
-	Status       string `json:"Status"`
 }

@@ -1,0 +1,14 @@
+Command: '"bash"'
+CreatedAt: 2023-01-31 19:28:16 -0300 -03
+ID: ''
+Image: cobra_dev_v2
+Labels: desktop.docker.io/binds/0/SourceKind=hostFile,desktop.docker.io/binds/0/Target=/home/developer/app,desktop.docker.io/binds/0/Source=/Users/kaxios/_DEV/_public/6za/cluster-tools
+LocalVolumes: '1'
+Mounts: go-pkg,/host_mnt/User…
+Names: dev-main
+Networks: bridge
+Ports: ''
+RunningFor: 2 days ago
+Size: 40.9MB (virtual 2.03GB)
+State: running
+Status: Up 2 days
