@@ -1,0 +1,12 @@
+apiVersion: tool.6zacode-toolbox.github.io/v1
+kind: DockerHost
+metadata:
+  labels:
+    app.kubernetes.io/name: dockerhost
+    app.kubernetes.io/instance: dockerhost-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: dockerhost-sample
+spec:
+  # TODO(user): Add fields here

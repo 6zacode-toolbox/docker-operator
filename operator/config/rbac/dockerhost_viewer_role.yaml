@@ -1,0 +1,27 @@
+# permissions for end users to view dockerhosts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dockerhost-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: operator
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+  name: dockerhost-viewer-role
+rules:
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts/status
+  verbs:
+  - get

@@ -1,0 +1,31 @@
+# permissions for end users to edit dockerhosts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dockerhost-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: operator
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+  name: dockerhost-editor-role
+rules:
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts/status
+  verbs:
+  - get
