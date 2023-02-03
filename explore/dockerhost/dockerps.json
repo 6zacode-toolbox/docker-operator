@@ -1,0 +1,33 @@
+[ {
+    "Command": "\"/bin/sh -c nginx-pr…\"",
+    "CreatedAt": "2023-01-25 18:49:59 -0500 EST",
+    "ID": "26f64a5bec50",
+    "Image": "ghcr.io/k3d-io/k3d-proxy:5.4.6",
+    "Labels": "k3d.cluster.imageVolume=k3d-kubefirst-images,k3d.cluster.token=,k3d.role=loadbalancer,k3d.cluster=kubefirst,org.opencontainers.image.description=Little helper to run CNCF's k3s in Docker,org.opencontainers.image.version=5,k3d.cluster.url=https://k3d-kubefirst-server-0:6443,org.opencontainers.image.url=https://github.com/k3d-io/k3d,app=k3d,k3d.cluster.network=k3d-kubefirst,k3d.cluster.network.external=false,k3d.cluster.network.id=0e15ef2f3f423d305eab643b7b4510e33e843b5ae0fea93f1312c5297871a822,k3d.cluster.network.iprange=172.19.0.0/16,org.opencontainers.image.source=https://github.com/k3d-io/k3d,org.opencontainers.image.title=k3d,k3d.version=v5.4.6,maintainer=NGINX Docker Maintainers \u003cdocker-maint@nginx.com\u003e,org.opencontainers.image.created=2022-08-29T10:10:44.655Z,org.opencontainers.image.licenses=MIT,org.opencontainers.image.revision=",
+    "LocalVolumes": "1",
+    "Mounts": "k3d-kubefirst-…",
+    "Names": "k3d-kubefirst-serverlb",
+    "Networks": "k3d-kubefirst",
+    "Ports": "0.0.0.0:80-\u003e80/tcp, :::80-\u003e80/tcp, 0.0.0.0:443-\u003e443/tcp, :::443-\u003e443/tcp, 0.0.0.0:39277-\u003e6443/tcp",
+    "RunningFor": "8 days ago",
+    "Size": "1.74kB (virtual 42.4MB)",
+    "State": "running",
+    "Status": "Up 8 days"
+},
+{
+    "Command": "\"/bin/k3s agent --ku…\"",
+    "CreatedAt": "2023-01-25 18:49:59 -0500 EST",
+    "ID": "0f8f5c4fa396",
+    "Image": "rancher/k3s:v1.24.4-k3s1",
+    "Labels": "k3d.cluster.network=k3d-kubefirst,k3d.cluster.network.iprange=172.19.0.0/16,k3d.version=v5.4.6,org.opencontainers.image.url=https://github.com/k3s-io/k3s,k3d.cluster.imageVolume=k3d-kubefirst-images,k3d.cluster.token=,org.opencontainers.image.source=https://github.com/k3s-io/k3s.git,app=k3d,org.opencontainers.image.created=2022-08-25T03:49:00Z,k3d.cluster=kubefirst,k3d.cluster.network.external=false,k3d.cluster.network.id=,k3d.cluster.url=https://k3d-kubefirst-server-0:6443,k3d.role=agent,org.opencontainers.image.revision=",
+    "LocalVolumes": "5",
+    "Mounts": "5440a5c8ffa8ce…,02f1c374182b63…,810d5b911f3c6e…,k3d-kubefirst-…,/home/tmp/_…,/home/tmp/_…,6016d7550ea811…",
+    "Names": "k3d-kubefirst-agent-2",
+    "Networks": "k3d-kubefirst",
+    "Ports": "",
+    "RunningFor": "8 days ago",
+    "Size": "873B (virtual 214MB)",
+    "State": "running",
+    "Status": "Up 8 days"
+}
+]

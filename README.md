@@ -20,7 +20,7 @@ mkdir operator
 
 cd operator
 
-kubebuilder init --domain 6zacode-toolbox.github.io --license apache2 --owner "6zacode-toolbox" --repo github.com/6zacode-toolbox/docker-operator
+kubebuilder init --domain 6zacode-toolbox.github.io --license apache2 --owner "6zacode-toolbox" --repo github.com/6zacode-toolbox/docker-operator/operator
 
 kubebuilder create api --group tool --version v1 --kind DockerHost --controller --resource
 ```
