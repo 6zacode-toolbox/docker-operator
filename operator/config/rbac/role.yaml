@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockerhosts/status
+  verbs:
+  - get
+  - patch
+  - update

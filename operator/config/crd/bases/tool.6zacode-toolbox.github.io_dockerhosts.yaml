@@ -1,0 +1,438 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.1
+  creationTimestamp: null
+  name: dockerhosts.tool.6zacode-toolbox.github.io
+spec:
+  group: tool.6zacode-toolbox.github.io
+  names:
+    kind: DockerHost
+    listKind: DockerHostList
+    plural: dockerhosts
+    singular: dockerhost
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: DockerHost is the Schema for the dockerhosts API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DockerHostSpec defines the desired state of DockerHost
+            properties:
+              foo:
+                description: Foo is an example field of DockerHost. Edit dockerhost_types.go
+                  to remove/update
+                type: string
+            type: object
+          status:
+            description: DockerHostStatus defines the observed state of DockerHost
+            properties:
+              containers:
+                items:
+                  properties:
+                    Command:
+                      type: string
+                    CreatedAt:
+                      type: string
+                    ID:
+                      type: string
+                    Image:
+                      type: string
+                    Labels:
+                      type: string
+                    LocalVolumes:
+                      type: string
+                    Mounts:
+                      type: string
+                    Names:
+                      type: string
+                    Networks:
+                      type: string
+                    Ports:
+                      type: string
+                    RunningFor:
+                      type: string
+                    Size:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                  required:
+                  - Command
+                  - CreatedAt
+                  - ID
+                  - Image
+                  - Labels
+                  - LocalVolumes
+                  - Mounts
+                  - Names
+                  - Networks
+                  - Ports
+                  - RunningFor
+                  - Size
+                  - State
+                  - Status
+                  type: object
+                type: array
+              host:
+                properties:
+                  Architecture:
+                    type: string
+                  BridgeNfIp6tables:
+                    type: boolean
+                  BridgeNfIptables:
+                    type: boolean
+                  CPUSet:
+                    type: boolean
+                  CPUShares:
+                    type: boolean
+                  CgroupDriver:
+                    type: string
+                  CgroupVersion:
+                    type: string
+                  ClientInfo:
+                    properties:
+                      Context:
+                        type: string
+                      Debug:
+                        type: boolean
+                      Plugins:
+                        items:
+                          properties:
+                            Name:
+                              type: string
+                            Path:
+                              type: string
+                            SchemaVersion:
+                              type: string
+                            ShortDescription:
+                              type: string
+                            URL:
+                              type: string
+                            Vendor:
+                              type: string
+                            Version:
+                              type: string
+                          required:
+                          - Name
+                          - Path
+                          - SchemaVersion
+                          - ShortDescription
+                          - Vendor
+                          - Version
+                          type: object
+                        type: array
+                    required:
+                    - Context
+                    - Debug
+                    - Plugins
+                    type: object
+                  ContainerdCommit:
+                    properties:
+                      Expected:
+                        type: string
+                      ID:
+                        type: string
+                    required:
+                    - Expected
+                    - ID
+                    type: object
+                  Containers:
+                    type: integer
+                  ContainersPaused:
+                    type: integer
+                  ContainersRunning:
+                    type: integer
+                  ContainersStopped:
+                    type: integer
+                  CpuCfsPeriod:
+                    type: boolean
+                  CpuCfsQuota:
+                    type: boolean
+                  Debug:
+                    type: boolean
+                  DefaultRuntime:
+                    type: string
+                  DockerRootDir:
+                    type: string
+                  Driver:
+                    type: string
+                  ExperimentalBuild:
+                    type: boolean
+                  HttpProxy:
+                    type: string
+                  HttpsProxy:
+                    type: string
+                  ID:
+                    type: string
+                  IPv4Forwarding:
+                    type: boolean
+                  Images:
+                    type: integer
+                  IndexServerAddress:
+                    type: string
+                  InitBinary:
+                    type: string
+                  InitCommit:
+                    properties:
+                      Expected:
+                        type: string
+                      ID:
+                        type: string
+                    required:
+                    - Expected
+                    - ID
+                    type: object
+                  Isolation:
+                    type: string
+                  KernelMemory:
+                    type: boolean
+                  KernelMemoryTCP:
+                    type: boolean
+                  KernelVersion:
+                    type: string
+                  Labels:
+                    items:
+                      type: string
+                    type: array
+                  LiveRestoreEnabled:
+                    type: boolean
+                  LoggingDriver:
+                    description: Not supported SystemTime         time.Time   `json:"SystemTime"`
+                    type: string
+                  MemTotal:
+                    format: int64
+                    type: integer
+                  MemoryLimit:
+                    type: boolean
+                  NCPU:
+                    type: integer
+                  NEventsListener:
+                    type: integer
+                  NFd:
+                    type: integer
+                  NGoroutines:
+                    type: integer
+                  Name:
+                    type: string
+                  NoProxy:
+                    type: string
+                  OSType:
+                    type: string
+                  OSVersion:
+                    type: string
+                  OomKillDisable:
+                    type: boolean
+                  OperatingSystem:
+                    type: string
+                  PidsLimit:
+                    type: boolean
+                  Plugins:
+                    description: 'EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO
+                      OWN! NOTE: json tags are required.  Any new fields you add must
+                      have json tags for the fields to be serialized.'
+                    properties:
+                      Authorization:
+                        items:
+                          type: string
+                        type: array
+                      Log:
+                        items:
+                          type: string
+                        type: array
+                      Network:
+                        items:
+                          type: string
+                        type: array
+                      Volume:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - Authorization
+                    - Log
+                    - Network
+                    - Volume
+                    type: object
+                  RegistryConfig:
+                    properties:
+                      AllowNondistributableArtifactsCIDRs:
+                        items:
+                          type: string
+                        type: array
+                      AllowNondistributableArtifactsHostnames:
+                        items:
+                          type: string
+                        type: array
+                      IndexConfigs:
+                        properties:
+                          docker.io:
+                            properties:
+                              Mirrors:
+                                items:
+                                  type: string
+                                type: array
+                              Name:
+                                type: string
+                              Official:
+                                type: boolean
+                              Secure:
+                                type: boolean
+                            required:
+                            - Mirrors
+                            - Name
+                            - Official
+                            - Secure
+                            type: object
+                          hubproxy.docker.internal:5000:
+                            properties:
+                              Mirrors:
+                                items:
+                                  type: string
+                                type: array
+                              Name:
+                                type: string
+                              Official:
+                                type: boolean
+                              Secure:
+                                type: boolean
+                            required:
+                            - Mirrors
+                            - Name
+                            - Official
+                            - Secure
+                            type: object
+                        required:
+                        - docker.io
+                        - hubproxy.docker.internal:5000
+                        type: object
+                      InsecureRegistryCIDRs:
+                        items:
+                          type: string
+                        type: array
+                      Mirrors:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - AllowNondistributableArtifactsCIDRs
+                    - AllowNondistributableArtifactsHostnames
+                    - IndexConfigs
+                    - InsecureRegistryCIDRs
+                    - Mirrors
+                    type: object
+                  RuncCommit:
+                    properties:
+                      Expected:
+                        type: string
+                      ID:
+                        type: string
+                    required:
+                    - Expected
+                    - ID
+                    type: object
+                  Runtimes:
+                    properties:
+                      io.containerd.runc.v2:
+                        properties:
+                          path:
+                            type: string
+                        required:
+                        - path
+                        type: object
+                      io.containerd.runtime.v1.linux:
+                        properties:
+                          path:
+                            type: string
+                        required:
+                        - path
+                        type: object
+                      runc:
+                        properties:
+                          path:
+                            type: string
+                        required:
+                        - path
+                        type: object
+                    required:
+                    - io.containerd.runc.v2
+                    - io.containerd.runtime.v1.linux
+                    - runc
+                    type: object
+                  SecurityOptions:
+                    items:
+                      type: string
+                    type: array
+                  ServerVersion:
+                    type: string
+                  SwapLimit:
+                    type: boolean
+                  Swarm:
+                    properties:
+                      ControlAvailable:
+                        type: boolean
+                      Error:
+                        type: string
+                      LocalNodeState:
+                        type: string
+                      NodeAddr:
+                        type: string
+                      NodeID:
+                        type: string
+                      RemoteManagers:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - ControlAvailable
+                    - Error
+                    - LocalNodeState
+                    - NodeAddr
+                    - NodeID
+                    - RemoteManagers
+                    type: object
+                required:
+                - Architecture
+                - CPUSet
+                - CPUShares
+                - Containers
+                - ContainersPaused
+                - ContainersRunning
+                - ContainersStopped
+                - DockerRootDir
+                - Driver
+                - HttpProxy
+                - ID
+                - Images
+                - Labels
+                - MemTotal
+                - NCPU
+                - Name
+                - OSType
+                - OSVersion
+                - OperatingSystem
+                - PidsLimit
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
