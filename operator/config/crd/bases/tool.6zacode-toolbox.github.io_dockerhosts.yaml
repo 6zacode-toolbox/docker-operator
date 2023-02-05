@@ -215,7 +215,6 @@ spec:
                   LiveRestoreEnabled:
                     type: boolean
                   LoggingDriver:
-                    description: Not supported SystemTime         time.Time   `json:"SystemTime"`
                     type: string
                   MemTotal:
                     format: int64
@@ -409,26 +408,7 @@ spec:
                     - RemoteManagers
                     type: object
                 required:
-                - Architecture
-                - CPUSet
-                - CPUShares
-                - Containers
-                - ContainersPaused
-                - ContainersRunning
-                - ContainersStopped
-                - DockerRootDir
-                - Driver
-                - HttpProxy
                 - ID
-                - Images
-                - Labels
-                - MemTotal
-                - NCPU
-                - Name
-                - OSType
-                - OSVersion
-                - OperatingSystem
-                - PidsLimit
                 type: object
             type: object
         type: object

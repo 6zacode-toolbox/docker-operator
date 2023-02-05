@@ -106,51 +106,49 @@ type ClientInfo struct {
 }
 
 type DockerInfo struct {
-	ID                string      `json:"ID"`
-	Containers        int         `json:"Containers"`
-	ContainersRunning int         `json:"ContainersRunning"`
-	ContainersPaused  int         `json:"ContainersPaused"`
-	ContainersStopped int         `json:"ContainersStopped"`
-	Images            int         `json:"Images"`
-	Driver            string      `json:"Driver"`
-	Plugins           HostPlugins `json:"Plugins,omitempty"`
-	MemoryLimit       bool        `json:"MemoryLimit,omitempty"`
-	SwapLimit         bool        `json:"SwapLimit,omitempty"`
-	KernelMemory      bool        `json:"KernelMemory,omitempty"`
-	KernelMemoryTCP   bool        `json:"KernelMemoryTCP,omitempty"`
-	CPUCfsPeriod      bool        `json:"CpuCfsPeriod,omitempty"`
-	CPUCfsQuota       bool        `json:"CpuCfsQuota,omitempty"`
-	CPUShares         bool        `json:"CPUShares"`
-	CPUSet            bool        `json:"CPUSet"`
-	PidsLimit         bool        `json:"PidsLimit"`
-	IPv4Forwarding    bool        `json:"IPv4Forwarding,omitempty"`
-	BridgeNfIptables  bool        `json:"BridgeNfIptables,omitempty"`
-	BridgeNfIP6Tables bool        `json:"BridgeNfIp6tables,omitempty"`
-	Debug             bool        `json:"Debug,omitempty"`
-	NFd               int         `json:"NFd,omitempty"`
-	OomKillDisable    bool        `json:"OomKillDisable,omitempty"`
-	NGoroutines       int         `json:"NGoroutines,omitempty"`
-	//Not supported
-	//SystemTime         time.Time   `json:"SystemTime"`
+	ID                 string           `json:"ID"`
+	Containers         int              `json:"Containers,omitempty"`
+	ContainersRunning  int              `json:"ContainersRunning,omitempty"`
+	ContainersPaused   int              `json:"ContainersPaused,omitempty"`
+	ContainersStopped  int              `json:"ContainersStopped,omitempty"`
+	Images             int              `json:"Images,omitempty"`
+	Driver             string           `json:"Driver,omitempty"`
+	Plugins            HostPlugins      `json:"Plugins,omitempty"`
+	MemoryLimit        bool             `json:"MemoryLimit,omitempty"`
+	SwapLimit          bool             `json:"SwapLimit,omitempty"`
+	KernelMemory       bool             `json:"KernelMemory,omitempty"`
+	KernelMemoryTCP    bool             `json:"KernelMemoryTCP,omitempty"`
+	CPUCfsPeriod       bool             `json:"CpuCfsPeriod,omitempty"`
+	CPUCfsQuota        bool             `json:"CpuCfsQuota,omitempty"`
+	CPUShares          bool             `json:"CPUShares,omitempty"`
+	CPUSet             bool             `json:"CPUSet,omitempty"`
+	PidsLimit          bool             `json:"PidsLimit,omitempty"`
+	IPv4Forwarding     bool             `json:"IPv4Forwarding,omitempty"`
+	BridgeNfIptables   bool             `json:"BridgeNfIptables,omitempty"`
+	BridgeNfIP6Tables  bool             `json:"BridgeNfIp6tables,omitempty"`
+	Debug              bool             `json:"Debug,omitempty"`
+	NFd                int              `json:"NFd,omitempty"`
+	OomKillDisable     bool             `json:"OomKillDisable,omitempty"`
+	NGoroutines        int              `json:"NGoroutines,omitempty"`
 	LoggingDriver      string           `json:"LoggingDriver,omitempty"`
 	CgroupDriver       string           `json:"CgroupDriver,omitempty"`
 	CgroupVersion      string           `json:"CgroupVersion,omitempty"`
 	NEventsListener    int              `json:"NEventsListener,omitempty"`
 	KernelVersion      string           `json:"KernelVersion,omitempty"`
-	OperatingSystem    string           `json:"OperatingSystem"`
-	OSVersion          string           `json:"OSVersion"`
-	OSType             string           `json:"OSType"`
-	Architecture       string           `json:"Architecture"`
+	OperatingSystem    string           `json:"OperatingSystem,omitempty"`
+	OSVersion          string           `json:"OSVersion,omitempty"`
+	OSType             string           `json:"OSType,omitempty"`
+	Architecture       string           `json:"Architecture,omitempty"`
 	IndexServerAddress string           `json:"IndexServerAddress,omitempty"`
 	RegistryConfig     RegistryConfig   `json:"RegistryConfig,omitempty"`
-	Ncpu               int              `json:"NCPU"`
-	MemTotal           int64            `json:"MemTotal"`
-	DockerRootDir      string           `json:"DockerRootDir"`
-	HTTPProxy          string           `json:"HttpProxy"`
+	Ncpu               int              `json:"NCPU,omitempty"`
+	MemTotal           int64            `json:"MemTotal,omitempty"`
+	DockerRootDir      string           `json:"DockerRootDir,omitempty"`
+	HTTPProxy          string           `json:"HttpProxy,omitempty"`
 	HTTPSProxy         string           `json:"HttpsProxy,omitempty"`
 	NoProxy            string           `json:"NoProxy,omitempty"`
-	Name               string           `json:"Name"`
-	Labels             []string         `json:"Labels"`
+	Name               string           `json:"Name,omitempty"`
+	Labels             []string         `json:"Labels,omitempty"`
 	ExperimentalBuild  bool             `json:"ExperimentalBuild,omitempty"`
 	ServerVersion      string           `json:"ServerVersion,omitempty"`
 	Runtimes           Runtimes         `json:"Runtimes,omitempty"`
@@ -164,6 +162,9 @@ type DockerInfo struct {
 	InitCommit         InitCommit       `json:"InitCommit,omitempty"`
 	SecurityOptions    []string         `json:"SecurityOptions,omitempty"`
 	ClientInfo         ClientInfo       `json:"ClientInfo,omitempty"`
+	//Not supported
+	//SystemTime         time.Time   `json:"SystemTime"`
+
 }
 
 type DockerContainerSummary struct {
