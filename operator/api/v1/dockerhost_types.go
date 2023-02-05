@@ -200,11 +200,11 @@ type DockerHostStatus struct {
 
 	Containers []DockerContainerSummary `json:"containers,omitempty"`
 	DockerHost DockerInfo               `json:"host,omitempty"`
+	//Sample string `json:"sample,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // DockerHost is the Schema for the dockerhosts API
 type DockerHost struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -214,8 +214,7 @@ type DockerHost struct {
 	Status DockerHostStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-
+// +kubebuilder:object:root=true
 // DockerHostList contains a list of DockerHost
 type DockerHostList struct {
 	metav1.TypeMeta `json:",inline"`
