@@ -23,86 +23,86 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 type HostPlugins struct {
-	Volume        []string `json:"Volume"`
-	Network       []string `json:"Network"`
-	Authorization []string `json:"Authorization"`
-	Log           []string `json:"Log"`
+	Volume        []string `json:"Volume,omitempty"`
+	Network       []string `json:"Network,omitempty"`
+	Authorization []string `json:"Authorization,omitempty"`
+	Log           []string `json:"Log,omitempty"`
 }
 type DockerIo struct {
-	Name     string   `json:"Name"`
-	Mirrors  []string `json:"Mirrors"`
-	Secure   bool     `json:"Secure"`
-	Official bool     `json:"Official"`
+	Name     string   `json:"Name,omitempty"`
+	Mirrors  []string `json:"Mirrors,omitempty"`
+	Secure   bool     `json:"Secure,omitempty"`
+	Official bool     `json:"Official,omitempty"`
 }
 type HubproxyDockerInternal5000 struct {
-	Name     string   `json:"Name"`
-	Mirrors  []string `json:"Mirrors"`
-	Secure   bool     `json:"Secure"`
-	Official bool     `json:"Official"`
+	Name     string   `json:"Name,omitempty"`
+	Mirrors  []string `json:"Mirrors,omitempty"`
+	Secure   bool     `json:"Secure,omitempty"`
+	Official bool     `json:"Official,omitempty"`
 }
 type IndexConfigs struct {
-	DockerIo                   DockerIo                   `json:"docker.io"`
-	HubproxyDockerInternal5000 HubproxyDockerInternal5000 `json:"hubproxy.docker.internal:5000"`
+	DockerIo                   DockerIo                   `json:"docker.io,omitempty"`
+	HubproxyDockerInternal5000 HubproxyDockerInternal5000 `json:"hubproxy.docker.internal:5000,omitempty"`
 }
 
 type RegistryConfig struct {
-	AllowNondistributableArtifactsCIDRs     []string     `json:"AllowNondistributableArtifactsCIDRs"`
-	AllowNondistributableArtifactsHostnames []string     `json:"AllowNondistributableArtifactsHostnames"`
-	InsecureRegistryCIDRs                   []string     `json:"InsecureRegistryCIDRs"`
-	IndexConfigs                            IndexConfigs `json:"IndexConfigs"`
-	Mirrors                                 []string     `json:"Mirrors"`
+	AllowNondistributableArtifactsCIDRs     []string     `json:"AllowNondistributableArtifactsCIDRs,omitempty"`
+	AllowNondistributableArtifactsHostnames []string     `json:"AllowNondistributableArtifactsHostnames,omitempty"`
+	InsecureRegistryCIDRs                   []string     `json:"InsecureRegistryCIDRs,omitempty"`
+	IndexConfigs                            IndexConfigs `json:"IndexConfigs,omitempty"`
+	Mirrors                                 []string     `json:"Mirrors,omitempty"`
 }
 
 type IoContainerdRuncV2 struct {
-	Path string `json:"path"`
+	Path string `json:"path,omitempty"`
 }
 type IoContainerdRuntimeV1Linux struct {
-	Path string `json:"path"`
+	Path string `json:"path,omitempty"`
 }
 type Runc struct {
-	Path string `json:"path"`
+	Path string `json:"path,omitempty"`
 }
 type Runtimes struct {
-	IoContainerdRuncV2         IoContainerdRuncV2         `json:"io.containerd.runc.v2"`
-	IoContainerdRuntimeV1Linux IoContainerdRuntimeV1Linux `json:"io.containerd.runtime.v1.linux"`
-	Runc                       Runc                       `json:"runc"`
+	IoContainerdRuncV2         IoContainerdRuncV2         `json:"io.containerd.runc.v2,omitempty"`
+	IoContainerdRuntimeV1Linux IoContainerdRuntimeV1Linux `json:"io.containerd.runtime.v1.linux,omitempty"`
+	Runc                       Runc                       `json:"runc,omitempty"`
 }
 
 type Swarm struct {
-	NodeID           string   `json:"NodeID"`
-	NodeAddr         string   `json:"NodeAddr"`
-	LocalNodeState   string   `json:"LocalNodeState"`
-	ControlAvailable bool     `json:"ControlAvailable"`
-	Error            string   `json:"Error"`
-	RemoteManagers   []string `json:"RemoteManagers"`
+	NodeID           string   `json:"NodeID,omitempty"`
+	NodeAddr         string   `json:"NodeAddr,omitempty"`
+	LocalNodeState   string   `json:"LocalNodeState,omitempty"`
+	ControlAvailable bool     `json:"ControlAvailable,omitempty"`
+	Error            string   `json:"Error,omitempty"`
+	RemoteManagers   []string `json:"RemoteManagers,omitempty"`
 }
 
 type ContainerdCommit struct {
-	ID       string `json:"ID"`
-	Expected string `json:"Expected"`
+	ID       string `json:"ID,omitempty"`
+	Expected string `json:"Expected,omitempty"`
 }
 type RuncCommit struct {
-	ID       string `json:"ID"`
-	Expected string `json:"Expected"`
+	ID       string `json:"ID,omitempty"`
+	Expected string `json:"Expected,omitempty"`
 }
 type InitCommit struct {
-	ID       string `json:"ID"`
-	Expected string `json:"Expected"`
+	ID       string `json:"ID,omitempty"`
+	Expected string `json:"Expected,omitempty"`
 }
 
 type Plugins struct {
-	SchemaVersion    string `json:"SchemaVersion"`
-	Vendor           string `json:"Vendor"`
-	Version          string `json:"Version"`
-	ShortDescription string `json:"ShortDescription"`
-	Name             string `json:"Name"`
-	Path             string `json:"Path"`
+	SchemaVersion    string `json:"SchemaVersion,omitempty"`
+	Vendor           string `json:"Vendor,omitempty"`
+	Version          string `json:"Version,omitempty"`
+	ShortDescription string `json:"ShortDescription,omitempty"`
+	Name             string `json:"Name,omitempty"`
+	Path             string `json:"Path,omitempty"`
 	URL              string `json:"URL,omitempty"`
 }
 type ClientInfo struct {
-	Debug   bool      `json:"Debug"`
-	Context string    `json:"Context"`
-	Plugins []Plugins `json:"Plugins"`
+	Debug   bool      `json:"Debug,omitempty"`
+	Context string    `json:"Context,omitempty"`
+	Plugins []Plugins `json:"Plugins,omitempty"`
 }
 
 type DockerInfo struct {
@@ -168,20 +168,20 @@ type DockerInfo struct {
 }
 
 type DockerContainerSummary struct {
-	Command      string `json:"Command"`
-	CreatedAt    string `json:"CreatedAt"`
-	ID           string `json:"ID"`
-	Image        string `json:"Image"`
-	Labels       string `json:"Labels"`
-	LocalVolumes string `json:"LocalVolumes"`
-	Mounts       string `json:"Mounts"`
-	Names        string `json:"Names"`
-	Networks     string `json:"Networks"`
-	Ports        string `json:"Ports"`
-	RunningFor   string `json:"RunningFor"`
-	Size         string `json:"Size"`
-	State        string `json:"State"`
-	Status       string `json:"Status"`
+	Command      string `json:"Command,omitempty"`
+	CreatedAt    string `json:"CreatedAt,omitempty"`
+	ID           string `json:"ID,omitempty"`
+	Image        string `json:"Image,omitempty"`
+	Labels       string `json:"Labels,omitempty"`
+	LocalVolumes string `json:"LocalVolumes,omitempty"`
+	Mounts       string `json:"Mounts,omitempty"`
+	Names        string `json:"Names,omitempty"`
+	Networks     string `json:"Networks,omitempty"`
+	Ports        string `json:"Ports,omitempty"`
+	RunningFor   string `json:"RunningFor,omitempty"`
+	Size         string `json:"Size,omitempty"`
+	State        string `json:"State,omitempty"`
+	Status       string `json:"Status,omitempty"`
 }
 
 // DockerHostSpec defines the desired state of DockerHost

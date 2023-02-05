@@ -74,21 +74,6 @@ spec:
                       type: string
                     Status:
                       type: string
-                  required:
-                  - Command
-                  - CreatedAt
-                  - ID
-                  - Image
-                  - Labels
-                  - LocalVolumes
-                  - Mounts
-                  - Names
-                  - Networks
-                  - Ports
-                  - RunningFor
-                  - Size
-                  - State
-                  - Status
                   type: object
                 type: array
               host:
@@ -130,19 +115,8 @@ spec:
                               type: string
                             Version:
                               type: string
-                          required:
-                          - Name
-                          - Path
-                          - SchemaVersion
-                          - ShortDescription
-                          - Vendor
-                          - Version
                           type: object
                         type: array
-                    required:
-                    - Context
-                    - Debug
-                    - Plugins
                     type: object
                   ContainerdCommit:
                     properties:
@@ -150,9 +124,6 @@ spec:
                         type: string
                       ID:
                         type: string
-                    required:
-                    - Expected
-                    - ID
                     type: object
                   Containers:
                     type: integer
@@ -196,9 +167,6 @@ spec:
                         type: string
                       ID:
                         type: string
-                    required:
-                    - Expected
-                    - ID
                     type: object
                   Isolation:
                     type: string
@@ -264,11 +232,6 @@ spec:
                         items:
                           type: string
                         type: array
-                    required:
-                    - Authorization
-                    - Log
-                    - Network
-                    - Volume
                     type: object
                   RegistryConfig:
                     properties:
@@ -294,11 +257,6 @@ spec:
                                 type: boolean
                               Secure:
                                 type: boolean
-                            required:
-                            - Mirrors
-                            - Name
-                            - Official
-                            - Secure
                             type: object
                           hubproxy.docker.internal:5000:
                             properties:
@@ -312,15 +270,7 @@ spec:
                                 type: boolean
                               Secure:
                                 type: boolean
-                            required:
-                            - Mirrors
-                            - Name
-                            - Official
-                            - Secure
                             type: object
-                        required:
-                        - docker.io
-                        - hubproxy.docker.internal:5000
                         type: object
                       InsecureRegistryCIDRs:
                         items:
@@ -330,12 +280,6 @@ spec:
                         items:
                           type: string
                         type: array
-                    required:
-                    - AllowNondistributableArtifactsCIDRs
-                    - AllowNondistributableArtifactsHostnames
-                    - IndexConfigs
-                    - InsecureRegistryCIDRs
-                    - Mirrors
                     type: object
                   RuncCommit:
                     properties:
@@ -343,9 +287,6 @@ spec:
                         type: string
                       ID:
                         type: string
-                    required:
-                    - Expected
-                    - ID
                     type: object
                   Runtimes:
                     properties:
@@ -353,27 +294,17 @@ spec:
                         properties:
                           path:
                             type: string
-                        required:
-                        - path
                         type: object
                       io.containerd.runtime.v1.linux:
                         properties:
                           path:
                             type: string
-                        required:
-                        - path
                         type: object
                       runc:
                         properties:
                           path:
                             type: string
-                        required:
-                        - path
                         type: object
-                    required:
-                    - io.containerd.runc.v2
-                    - io.containerd.runtime.v1.linux
-                    - runc
                     type: object
                   SecurityOptions:
                     items:
@@ -399,13 +330,6 @@ spec:
                         items:
                           type: string
                         type: array
-                    required:
-                    - ControlAvailable
-                    - Error
-                    - LocalNodeState
-                    - NodeAddr
-                    - NodeID
-                    - RemoteManagers
                     type: object
                 required:
                 - ID
