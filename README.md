@@ -38,3 +38,7 @@ Error: not all generators ran successfully
 run `controller-gen rbac:roleName=manager-role crd webhook paths=./... output:crd:artifacts:config=config/crd/bases -w` to see all available markers, or `controller-gen rbac:roleName=manager-role crd webhook paths=./... output:crd:artifacts:config=config/crd/bases -h` for usage
 make: *** [Makefile:43: manifests] Error 1
 ```
+
+```bash 
+https://6zacode-toolbox.github.io/docker-operator/index.yaml
+```

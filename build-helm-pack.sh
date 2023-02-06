@@ -5,6 +5,7 @@ source  ~/.bash_profile
 export HERE=$PWD
 export CHART_NAME=docker-operator
 export CHART_DIR=$PWD/helm/
+export PAGES_DOMAIN=6zacode-toolbox.github.io
 
 docker run --rm -it \
     -v $PWD/operator:/go/src \
@@ -34,4 +35,4 @@ docker run --rm -it \
     --platform linux/amd64 \
     -v $CHART_DIR:/chart \
     6zar/kubebuilder \
-    helm repo index --url https://6za.github.io/helm-charts/ --merge index.yaml .
+    helm repo index --url https://$PAGES_DOMAIN/$CHART_NAME/ --merge index.yaml .
