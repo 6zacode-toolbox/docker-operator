@@ -1,0 +1,24 @@
+apiVersion: v1
+entries:
+  docker-operator:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-06T23:19:56.33536371Z"
+    description: A Helm chart for Kubernetes
+    digest: dfb35ab686eb313ca28d706870746fd2c7c79f7ab2b569f555d00501c19b7c9e
+    name: docker-operator
+    type: application
+    urls:
+    - https://6za.github.io/helm-charts/docker-operator-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-06T23:19:56.321042127Z"
+    description: A Helm chart for Kubernetes
+    digest: c4714c8c1f240b3f2b77a14c2138a3a4a2a1154e410c27d6f490492c375de3c2
+    name: docker-operator
+    type: application
+    urls:
+    - https://6za.github.io/helm-charts/docker-operator-0.2.0.tgz
+    version: 0.2.0
+generated: "2023-02-06T23:19:56.301502043Z"
