@@ -189,8 +189,13 @@ type DockerHostSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of DockerHost. Edit dockerhost_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	HostIP string `json:"hostip,omitempty"`
+
+	//Possible Improvements
+	// - Frequency of check in seconds
+	// - Secret Name
+	// - Secret Namespace
+	// - ...
 }
 
 // DockerHostStatus defines the observed state of DockerHost
@@ -200,6 +205,7 @@ type DockerHostStatus struct {
 
 	Containers []DockerContainerSummary `json:"containers,omitempty"`
 	DockerHost DockerInfo               `json:"host,omitempty"`
+	Instanced  bool                     `json:"instanced,omitempty"`
 	//Sample string `json:"sample,omitempty"`
 }
 

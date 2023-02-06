@@ -10,3 +10,4 @@ metadata:
   name: dockerhost-sample
 spec:
   # TODO(user): Add fields here
+  hostip: "192.168.2.162"
