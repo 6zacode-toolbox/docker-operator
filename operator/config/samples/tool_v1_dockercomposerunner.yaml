@@ -1,0 +1,15 @@
+apiVersion: tool.6zacode-toolbox.github.io/v1
+kind: DockerComposeRunner
+metadata:
+  labels:
+    app.kubernetes.io/name: dockercomposerunner
+    app.kubernetes.io/instance: dockercomposerunner-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: dockercomposerunner-sample
+spec:
+  # TODO(user): Add fields here
+  hostip: "192.168.2.162"
+  composeFile: docker-compose.yaml
+  repoAddress: https://github.com/6zacode-toolbox/docker-agent.git

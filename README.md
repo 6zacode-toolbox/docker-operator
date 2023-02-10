@@ -24,6 +24,8 @@ kubebuilder init --domain 6zacode-toolbox.github.io --license apache2 --owner "6
 
 kubebuilder create api --group tool --version v1 --kind DockerHost --controller --resource
 
+kubebuilder create api --group tool --version v1 --kind DockerComposeRunner --controller --resource
+
 make manifests
 # When doing complex objects start by parts, as serilziation may be tricky
 
