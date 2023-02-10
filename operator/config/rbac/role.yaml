@@ -8,6 +8,32 @@ rules:
 - apiGroups:
   - tool.6zacode-toolbox.github.io
   resources:
+  - dockercomposerunners
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockercomposerunners/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
+  - dockercomposerunners/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - tool.6zacode-toolbox.github.io
+  resources:
   - dockerhosts
   verbs:
   - create

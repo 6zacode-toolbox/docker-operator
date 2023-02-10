@@ -17,4 +17,13 @@ resources:
   kind: DockerHost
   path: github.com/6zacode-toolbox/docker-operator/operator/api/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: 6zacode-toolbox.github.io
+  group: tool
+  kind: DockerComposeRunner
+  path: github.com/6zacode-toolbox/docker-operator/operator/api/v1
+  version: v1
 version: "3"
