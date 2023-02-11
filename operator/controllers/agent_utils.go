@@ -41,6 +41,21 @@ func CreateDockerHostCronJob(crd *v1.DockerHost) (*v1batch.CronJob, error) {
 	return cronjob, nil
 }
 
+func CreateDockerComposeRunnerJob(crd *v1.DockerComposeRunner, action string) (*v1batch.Job, error) {
+	podSpec, _ := CreateDockerComposeRunnerPodSpec(crd, action)
+	cronjobMinimal := InstantiateMinimalDockerComposeRunnerJob(crd.Name, NamespaceJobs)
+
+	cronjob := &v1batch.Job{
+		ObjectMeta: cronjobMinimal.ObjectMeta,
+		Spec: v1batch.JobSpec{
+			Template: apiV1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+	return cronjob, nil
+}
+
 func CreateDockerHostPodSpec(crd *v1.DockerHost) (apiV1.PodSpec, error) {
 	env := []apiV1.EnvVar{
 		{
@@ -56,13 +71,71 @@ func CreateDockerHostPodSpec(crd *v1.DockerHost) (apiV1.PodSpec, error) {
 			Value: "1",
 		},
 	}
+	command := "agent"
+
+	result := CreateDockerAgentPod(env, command, crd.GetCrdDefinition())
+	return result, nil
+}
+
+func CreateDockerComposeRunnerPodSpec(crd *v1.DockerComposeRunner, action string) (apiV1.PodSpec, error) {
+	/*
+	   echo $COMPOSE_FILE
+	   echo $REPO_ADDRESS
+	   echo $EXECUTION_PATH
+	   echo $GITHUB_TOKEN
+	   # "up -d" or "down"
+	   echo $ACTION
+	*/
+
+	env := []apiV1.EnvVar{
+		{
+			Name:  "DOCKER_CERT_PATH",
+			Value: "/certs",
+		},
+		{
+			Name:  "DOCKER_HOST",
+			Value: "tcp://" + crd.Spec.HostIP + ":2376",
+		},
+		{
+			Name:  "DOCKER_TLS_VERIFY",
+			Value: "1",
+		},
+		{
+			Name:  "COMPOSE_FILE",
+			Value: crd.Spec.ComposeFile,
+		},
+		{
+			Name:  "REPO_ADDRESS",
+			Value: crd.Spec.RepoAddress,
+		},
+		{
+			Name:  "EXECUTION_PATH",
+			Value: crd.Spec.ExecutionPath,
+		},
+		//To get from a Secret froom vault
+		{
+			Name:  "GITHUB_TOKEN",
+			Value: "TO get from a secret",
+		},
+		{
+			Name:  "ACTION",
+			Value: action,
+		},
+	}
+	command := "agent"
+
+	result := CreateDockerAgentPod(env, command, crd.GetCrdDefinition())
+	return result, nil
+}
+
+func CreateDockerAgentPod(env []apiV1.EnvVar, command string, crd *v1.CrdDefinition) apiV1.PodSpec {
 	container := apiV1.Container{
 		Name:            "docker-agent",
 		Image:           ImageJob,
 		ImagePullPolicy: apiV1.PullAlways,
 		Env:             env,
 		Command:         []string{"/home/app/docker-agent"},
-		Args:            []string{"agent", "--crd-api-version", crd.APIVersion, "--crd-namespace", crd.Namespace, "--crd-instance", crd.Name, "--crd-resource", "dockerhosts"},
+		Args:            []string{command, "--crd-api-version", crd.APIVersion, "--crd-namespace", crd.Namespace, "--crd-instance", crd.Name, "--crd-resource", crd.Resource},
 		VolumeMounts: []apiV1.VolumeMount{{
 			MountPath: "/certs",
 			Name:      "docker-certs",
@@ -85,7 +158,7 @@ func CreateDockerHostPodSpec(crd *v1.DockerHost) (apiV1.PodSpec, error) {
 			},
 		},
 	}
-	return result, nil
+	return result
 }
 
 func InstantiateMinimalDockerHostCronJob(name string, namespace string) *v1batch.CronJob {
@@ -100,6 +173,18 @@ func InstantiateMinimalDockerHostCronJob(name string, namespace string) *v1batch
 	return job
 }
 
+func InstantiateMinimalDockerComposeRunnerJob(name string, namespace string) *v1batch.Job {
+	jobName := name + "-dcr-job"
+	job := &v1batch.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      jobName,
+			Namespace: namespace,
+		},
+		Spec: v1batch.JobSpec{},
+	}
+	return job
+}
+
 func checkCronJob(job *v1batch.CronJob) {
 	if job == nil {
 		log.Log.Info("Job is nil")
@@ -108,6 +193,28 @@ func checkCronJob(job *v1batch.CronJob) {
 	} else {
 		log.Log.Info("Job exist:" + job.Name)
 	}
+}
+
+func CreateDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.ConfigMap {
+	configMapName := GenerateComposeRunnerConfigMapName(crd.Name)
+	configMap := &apiV1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configMapName,
+			Namespace: NamespaceJobs,
+		},
+		Data: map[string]string{
+			"hostip":        crd.Spec.HostIP,
+			"composeFile":   crd.Spec.ComposeFile,
+			"executionPath": crd.Spec.ExecutionPath,
+			"repoAddress":   crd.Spec.RepoAddress,
+		},
+	}
+	return configMap
+
+}
+
+func GenerateComposeRunnerConfigMapName(crdName string) string {
+	return crdName + "-dcr-cm"
 }
 
 /*

@@ -18,15 +18,27 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"reflect"
+	"strings"
 
+	"google.golang.org/grpc/status"
+	v1batch "k8s.io/api/batch/v1"
+	apiV1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/cri-api/pkg/errors"
+	errork8s "k8s.io/cri-api/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	toolv1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
+	v1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
 )
 
 // DockerComposeRunnerReconciler reconciles a DockerComposeRunner object
@@ -51,9 +63,157 @@ type DockerComposeRunnerReconciler struct {
 func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
+	/*
+		Logic:
+			If CRD deleted:
+				- run down Job based on config map
+				- run down Job
+				- delete configMap and jobs
+			IF not delete is a create/update....
+
+			- Create ConfigMap/Up Job
+
+			If Create:
+				- Create configMap
+				- Run up Job
+
+	*/
+
+	eventType := EventUpdate
 	// TODO(user): your logic here
-	log.Log.Info("Event")
+	//log.Log.Info(fmt.Sprintf("Called: %#v", req))
+	log.Log.Info(fmt.Sprintf("Called: %#v", req.NamespacedName))
+
+	//Desired State
+	instance := &v1.DockerComposeRunner{}
+
+	err := r.Get(context.TODO(), req.NamespacedName, instance)
+	if err != nil {
+		log.Log.Info(string(err.Error()))
+		status, _ := status.FromError(err)
+		log.Log.Info(status.Code().String())
+		if errork8s.IsNotFound(err) || strings.Contains(string(err.Error()), "not found") {
+			// Object not found, return.  Created objects are automatically garbage collected.
+			// For additional cleanup logic use finalizers.
+			// CRD was removed (DELETE EVENT)
+			// How to remove the objects?
+			log.Log.Info("Delete Job")
+			r.RunComposeDownJob(req.Name, NamespaceJobs)
+			eventType = EventDelete
+			log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
+			return reconcile.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		return reconcile.Result{}, err
+	}
+	// Check if Job was already created:
+	if instance.Status.Instanced {
+		// nothing to be done
+		return reconcile.Result{}, nil
+	}
+
+	desiredJob, err := CreateDockerComposeRunnerJob(instance, "up -d")
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	currentStateJob, err := r.GetDockerComposeRunnerCurrentState(req.Name)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	//checkCronJob(currentStateJob)
+
+	//missing job, creating one
+	if currentStateJob == nil {
+		eventType = EventCreate
+		log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
+	}
+	//If is not delete(early event), if it didn't exist it must be deleted.
+	if currentStateJob == nil {
+		err = r.RunComposeUpJob(desiredJob, instance)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		return reconcile.Result{}, nil
+	}
+
+	//Update detected, but no job exist
+	if eventType == EventUpdate && currentStateJob != nil {
+		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
+			r.RunComposeDownJob(req.Name, NamespaceJobs)
+			err = r.RunComposeUpJob(desiredJob, instance)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+		return reconcile.Result{}, nil
+	} else {
+		log.Log.Info(fmt.Sprintf("Unkown State: %#v", eventType))
+	}
 	return ctrl.Result{}, nil
+}
+
+func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job, instance *v1.DockerComposeRunner) error {
+	//Create ConfigMap
+	configMap := CreateDockerComposeRunnerConfigMap(instance)
+	err := r.Create(context.TODO(), configMap)
+	if err != nil {
+		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", instance.Namespace, configMap))
+		return err
+
+	}
+	return nil
+}
+func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace string) error {
+	//Delete ConfigMap
+	configMap := &apiV1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      GenerateComposeRunnerConfigMapName(name),
+			Namespace: namespace,
+		},
+	}
+	err := r.Delete(context.TODO(), configMap)
+	if err != nil {
+		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", namespace, configMap))
+		return err
+
+	}
+	return nil
+}
+
+func (r *DockerComposeRunnerReconciler) CreateDockerComposeRunnerJob(desiredJob *v1batch.Job, instance *v1.DockerComposeRunner) error {
+	err := r.Create(context.TODO(), desiredJob)
+	if err != nil {
+		return nil
+	}
+	instance.Status.Instanced = true
+	err = r.Status().Update(context.Background(), instance)
+	return err
+}
+
+func (r *DockerComposeRunnerReconciler) DeleteDockerComposeRunnerJob(name string, namespace string) error {
+	// How to handle delete events on which you dont have enough info to fill an unkown deployment
+	// Delete before a create
+	// Last known state is needed to allow to know where to kill the compose
+	job := InstantiateMinimalDockerComposeRunnerJob(name, namespace)
+	err := r.Delete(context.TODO(), job)
+	if err != nil {
+		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", namespace, job))
+		return err
+
+	}
+	return nil
+}
+
+func (r *DockerComposeRunnerReconciler) GetDockerComposeRunnerCurrentState(crdName string) (*v1batch.Job, error) {
+	job := InstantiateMinimalDockerComposeRunnerJob(crdName, NamespaceJobs)
+	jobFound := &v1batch.Job{}
+	err := r.Get(context.TODO(), types.NamespacedName{Name: job.Name, Namespace: NamespaceJobs}, jobFound)
+	if err != nil && errors.IsNotFound(err) {
+		log.Log.Info(fmt.Sprintf("Not Found Job %s/%s\n", NamespaceJobs, job.Name))
+		jobFound = nil
+	}
+	return jobFound, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
