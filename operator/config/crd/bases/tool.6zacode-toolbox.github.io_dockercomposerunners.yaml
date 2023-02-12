@@ -58,6 +58,21 @@ spec:
           status:
             description: DockerComposeRunnerStatus defines the observed state of DockerComposeRunner
             properties:
+              composeStatus:
+                items:
+                  properties:
+                    ConfigFiles:
+                      type: string
+                    Name:
+                      type: string
+                    Status:
+                      type: string
+                  required:
+                  - ConfigFiles
+                  - Name
+                  - Status
+                  type: object
+                type: array
               instanced:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
