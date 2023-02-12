@@ -97,28 +97,32 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 			// For additional cleanup logic use finalizers.
 			// CRD was removed (DELETE EVENT)
 			// How to remove the objects?
-			log.Log.Info("Delete Job")
 			r.RunComposeDownJob(req.Name, NamespaceJobs)
 			eventType = EventDelete
 			log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
+			log.Log.Info("Event Type:" + eventType)
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		log.Log.Error(err, "Event Type(missing object):"+eventType)
 		return reconcile.Result{}, err
 	}
 	// Check if Job was already created:
 	if instance.Status.Instanced {
 		// nothing to be done
+		log.Log.Info("Event Type(object instantiated):" + eventType)
 		return reconcile.Result{}, nil
 	}
 
 	desiredJob, err := CreateDockerComposeRunnerJob(instance, "up -d")
 	if err != nil {
+		log.Log.Error(err, "Event Type(err getting desiredState):"+eventType)
 		return reconcile.Result{}, err
 	}
 
 	currentStateJob, err := r.GetDockerComposeRunnerCurrentState(req.Name)
 	if err != nil {
+		log.Log.Error(err, "Event Type(err getting currentState):"+eventType)
 		return reconcile.Result{}, err
 	}
 	//checkCronJob(currentStateJob)
@@ -132,8 +136,10 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	if currentStateJob == nil {
 		err = r.RunComposeUpJob(desiredJob, instance)
 		if err != nil {
+			log.Log.Error(err, "Event Type(err running compose up):"+eventType)
 			return reconcile.Result{}, err
 		}
+		log.Log.Info("Event Type(post compose up):" + eventType)
 		return reconcile.Result{}, nil
 	}
 
@@ -143,25 +149,59 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 			r.RunComposeDownJob(req.Name, NamespaceJobs)
 			err = r.RunComposeUpJob(desiredJob, instance)
 			if err != nil {
+				log.Log.Error(err, "Event Type(err running compose down/up):"+eventType)
 				return reconcile.Result{}, err
 			}
 		}
+		log.Log.Info("Event Type(post running compose down/up):" + eventType)
 		return reconcile.Result{}, nil
 	} else {
 		log.Log.Info(fmt.Sprintf("Unkown State: %#v", eventType))
 	}
+	log.Log.Info("Event Type(final return):" + eventType)
 	return ctrl.Result{}, nil
 }
 
 func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job, instance *v1.DockerComposeRunner) error {
 	//Create ConfigMap
+	log.Log.Info("RunComposeUpJob:" + instance.Name)
 	configMap := CreateDockerComposeRunnerConfigMap(instance)
 	err := r.Create(context.TODO(), configMap)
 	if err != nil {
-		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", instance.Namespace, configMap))
+		log.Log.Error(err, fmt.Sprintf("Error creating configmap %s/%s\n", instance.Namespace, configMap))
 		return err
 
 	}
+
+	//remove old jobs
+	jobs := &v1batch.Job{}
+	err = r.DeleteAllOf(context.TODO(), jobs, client.InNamespace(instance.Namespace), client.MatchingLabels(GetLabels(instance.GetCrdDefinition())), client.GracePeriodSeconds(5))
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
+		return err
+
+	}
+	//rmeove old pods
+	pods := &apiV1.Pod{}
+	err = r.DeleteAllOf(context.TODO(), pods, client.InNamespace(instance.Namespace), client.MatchingLabels(GetLabels(instance.GetCrdDefinition())), client.GracePeriodSeconds(5))
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
+		return err
+	}
+	//create new job
+	job, err := CreateDockerComposeRunnerJob(instance, "up -d")
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, job.Name))
+		return err
+
+	}
+	err = r.Create(context.TODO(), job)
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job %s/%s\n", instance.Namespace, job.Name))
+		return err
+
+	}
+
 	return nil
 }
 func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace string) error {
@@ -172,12 +212,11 @@ func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace
 			Namespace: namespace,
 		},
 	}
-	err := r.Delete(context.TODO(), configMap)
-	if err != nil {
-		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", namespace, configMap))
-		return err
+	_ = r.Delete(context.TODO(), configMap)
+	//Err is irrelevant here, as most of the case the delete is no-ops as the resource should not exist yet.
 
-	}
+	// !TODO: Add some pod or action to clean the jobs dispached.
+	// USE TTL: https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/#caveats
 	return nil
 }
 
@@ -216,7 +255,7 @@ func (r *DockerComposeRunnerReconciler) GetDockerComposeRunnerCurrentState(crdNa
 	return jobFound, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
+// SetupWithManager sets up the controller with the Manager and its filters.
 func (r *DockerComposeRunnerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&toolv1.DockerComposeRunner{}).
