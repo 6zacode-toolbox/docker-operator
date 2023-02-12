@@ -40,7 +40,14 @@ type DockerComposeRunnerSpec struct {
 type DockerComposeRunnerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Instanced bool `json:"instanced,omitempty"`
+	Instanced     bool            `json:"instanced,omitempty"`
+	ComposeStatus []ComposeStatus `json:"composeStatus,omitempty"`
+}
+
+type ComposeStatus struct {
+	Name        string `json:"Name"`
+	Status      string `json:"Status"`
+	ConfigFiles string `json:"ConfigFiles"`
 }
 
 //+kubebuilder:object:root=true

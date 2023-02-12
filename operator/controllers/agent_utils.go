@@ -250,7 +250,7 @@ func CreateDockerAgentPod(env []apiV1.EnvVar, command string) apiV1.PodSpec {
 		ImagePullPolicy: apiV1.PullAlways,
 		Env:             env,
 		Command:         []string{"/home/app/docker-agent"},
-		Args:            []string{command, "--crd-api-version", "$CRD_API_VERSION", "--crd-namespace", "$CRD_NAMESPACE", "--crd-instance", "$CRD_NAME", "--crd-resource", "$CRD_RESOURCE"},
+		Args:            []string{command, "--crd-api-version", "$(CRD_API_VERSION)", "--crd-namespace", "$(CRD_NAMESPACE)", "--crd-instance", "$(CRD_NAME)", "--crd-resource", "$(CRD_RESOURCE)"},
 		VolumeMounts: []apiV1.VolumeMount{{
 			MountPath: "/certs",
 			Name:      "docker-certs",
