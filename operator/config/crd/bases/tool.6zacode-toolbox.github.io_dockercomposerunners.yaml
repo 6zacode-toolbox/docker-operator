@@ -61,16 +61,12 @@ spec:
               composeStatus:
                 items:
                   properties:
-                    ConfigFiles:
+                    configFiles:
                       type: string
-                    Name:
+                    name:
                       type: string
-                    Status:
+                    status:
                       type: string
-                  required:
-                  - ConfigFiles
-                  - Name
-                  - Status
                   type: object
                 type: array
               instanced:
