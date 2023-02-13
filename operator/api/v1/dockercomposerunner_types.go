@@ -45,9 +45,9 @@ type DockerComposeRunnerStatus struct {
 }
 
 type ComposeStatus struct {
-	Name        string `json:"Name"`
-	Status      string `json:"Status"`
-	ConfigFiles string `json:"ConfigFiles"`
+	Name        string `json:"name,omitempty"`
+	Status      string `json:"status,omitempty"`
+	ConfigFiles string `json:"configFiles,omitempty"`
 }
 
 //+kubebuilder:object:root=true
