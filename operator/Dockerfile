@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.19 as builder
+FROM cgr.dev/chainguard/go:1.19 as builder
 ARG TARGETOS
 ARG TARGETARCH
 
