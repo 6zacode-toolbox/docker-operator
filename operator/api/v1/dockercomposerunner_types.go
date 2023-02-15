@@ -50,9 +50,8 @@ type ComposeStatus struct {
 	ConfigFiles string `json:"configFiles,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // DockerComposeRunner is the Schema for the dockercomposerunners API
 type DockerComposeRunner struct {
 	metav1.TypeMeta   `json:",inline"`

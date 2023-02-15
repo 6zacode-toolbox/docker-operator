@@ -25,7 +25,6 @@ import (
 	"google.golang.org/grpc/status"
 	v1batch "k8s.io/api/batch/v1"
 	apiV1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/cri-api/pkg/errors"
@@ -114,7 +113,7 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 		return reconcile.Result{}, nil
 	}
 
-	desiredJob, err := CreateDockerComposeRunnerJob(instance, "up -d")
+	desiredJob, err := CreateDockerComposeRunnerJob(instance.GetCrdDefinition(), "up -d")
 	if err != nil {
 		log.Log.Error(err, "Event Type(err getting desiredState):"+eventType)
 		return reconcile.Result{}, err
@@ -165,58 +164,92 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job, instance *v1.DockerComposeRunner) error {
 	//Create ConfigMap
 	log.Log.Info("RunComposeUpJob:" + instance.Name)
+	definition := instance.GetCrdDefinition()
+	cms := &apiV1.ConfigMap{}
+	err := r.DeleteAllOf(context.TODO(), cms, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", definition.Namespace, definition.Name))
+		return err
+	}
 	configMap := CreateDockerComposeRunnerConfigMap(instance)
-	err := r.Create(context.TODO(), configMap)
+	err = r.Create(context.TODO(), configMap)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating configmap %s/%s\n", instance.Namespace, configMap))
 		return err
 
 	}
 
-	//remove old jobs
-	jobs := &v1batch.Job{}
-	err = r.DeleteAllOf(context.TODO(), jobs, client.InNamespace(instance.Namespace), client.MatchingLabels(GetLabels(instance.GetCrdDefinition())), client.GracePeriodSeconds(5))
+	action := "up -d"
+	err = r.CleanAndCreateJob(instance.GetCrdDefinition(), action)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
+		return err
+	}
+	return nil
+}
+
+func (r *DockerComposeRunnerReconciler) CleanAndCreateJob(definition *v1.CrdDefinition, action string) error {
+	//remove old jobs
+	jobs := &v1batch.Job{}
+	err := r.DeleteAllOf(context.TODO(), jobs, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", definition.Namespace, definition.Name))
 		return err
 
 	}
-	//rmeove old pods
+
+	//remove old pods
 	pods := &apiV1.Pod{}
-	err = r.DeleteAllOf(context.TODO(), pods, client.InNamespace(instance.Namespace), client.MatchingLabels(GetLabels(instance.GetCrdDefinition())), client.GracePeriodSeconds(5))
+	err = r.DeleteAllOf(context.TODO(), pods, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", definition.Namespace, definition.Name))
 		return err
 	}
+
 	//create new job
-	job, err := CreateDockerComposeRunnerJob(instance, "up -d")
+	job, err := CreateDockerComposeRunnerJob(definition, action)
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, job.Name))
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", definition.Namespace, job.Name))
 		return err
 
 	}
 	err = r.Create(context.TODO(), job)
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job %s/%s\n", instance.Namespace, job.Name))
+		log.Log.Error(err, fmt.Sprintf("Error creating job %s/%s\n", definition.Namespace, job.Name))
 		return err
 
 	}
-
 	return nil
 }
 func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace string) error {
 	//Delete ConfigMap
-	configMap := &apiV1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      GenerateComposeRunnerConfigMapName(name),
-			Namespace: namespace,
-		},
-	}
-	_ = r.Delete(context.TODO(), configMap)
+	/*
+		configMap := &apiV1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      GenerateComposeRunnerConfigMapName(name),
+				Namespace: namespace,
+			},
+		}
+		_ = r.Delete(context.TODO(), configMap)
+	*/
 	//Err is irrelevant here, as most of the case the delete is no-ops as the resource should not exist yet.
 
 	// !TODO: Add some pod or action to clean the jobs dispached.
 	// USE TTL: https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/#caveats
+
+	defintion := &v1.CrdDefinition{
+		Name:       name,
+		Namespace:  namespace,
+		APIVersion: "tool.6zacode-toolbox.github.io/v1",
+		Resource:   "dockercomposerunners",
+	}
+	action := "down"
+	err := r.CleanAndCreateJob(defintion, action)
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", defintion.Namespace, defintion.Name))
+		return err
+	}
+
 	return nil
 }
 
