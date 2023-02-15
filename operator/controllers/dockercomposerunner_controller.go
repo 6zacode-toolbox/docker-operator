@@ -37,7 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	toolv1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
-	v1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
 )
 
 // DockerComposeRunnerReconciler reconciles a DockerComposeRunner object
@@ -84,7 +83,7 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	log.Log.Info(fmt.Sprintf("Called: %#v", req.NamespacedName))
 
 	//Desired State
-	instance := &v1.DockerComposeRunner{}
+	instance := &toolv1.DockerComposeRunner{}
 
 	err := r.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
@@ -161,7 +160,7 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	return ctrl.Result{}, nil
 }
 
-func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job, instance *v1.DockerComposeRunner) error {
+func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job, instance *toolv1.DockerComposeRunner) error {
 	//Create ConfigMap
 	log.Log.Info("RunComposeUpJob:" + instance.Name)
 	definition := instance.GetCrdDefinition()
@@ -179,8 +178,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job,
 
 	}
 
-	action := "up -d"
-	err = r.CleanAndCreateJob(instance.GetCrdDefinition(), action)
+	err = r.CleanAndCreateJob(instance.GetCrdDefinition(), toolv1.COMPOSE_ACTION_UP)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
 		return err
@@ -188,7 +186,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job,
 	return nil
 }
 
-func (r *DockerComposeRunnerReconciler) CleanAndCreateJob(definition *v1.CrdDefinition, action string) error {
+func (r *DockerComposeRunnerReconciler) CleanAndCreateJob(definition *toolv1.CrdDefinition, action string) error {
 	//remove old jobs
 	jobs := &v1batch.Job{}
 	err := r.DeleteAllOf(context.TODO(), jobs, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
@@ -237,14 +235,13 @@ func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace
 	// !TODO: Add some pod or action to clean the jobs dispached.
 	// USE TTL: https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/#caveats
 
-	defintion := &v1.CrdDefinition{
+	defintion := &toolv1.CrdDefinition{
 		Name:       name,
 		Namespace:  namespace,
 		APIVersion: "tool.6zacode-toolbox.github.io/v1",
 		Resource:   "dockercomposerunners",
 	}
-	action := "down"
-	err := r.CleanAndCreateJob(defintion, action)
+	err := r.CleanAndCreateJob(defintion, toolv1.COMPOSE_ACTION_DOWN)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", defintion.Namespace, defintion.Name))
 		return err
@@ -253,7 +250,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace
 	return nil
 }
 
-func (r *DockerComposeRunnerReconciler) CreateDockerComposeRunnerJob(desiredJob *v1batch.Job, instance *v1.DockerComposeRunner) error {
+func (r *DockerComposeRunnerReconciler) CreateDockerComposeRunnerJob(desiredJob *v1batch.Job, instance *toolv1.DockerComposeRunner) error {
 	err := r.Create(context.TODO(), desiredJob)
 	if err != nil {
 		return nil

@@ -70,6 +70,17 @@ spec:
           status:
             description: DockerComposeRunnerStatus defines the observed state of DockerComposeRunner
             properties:
+              composeStatus:
+                items:
+                  properties:
+                    configFiles:
+                      type: string
+                    name:
+                      type: string
+                    status:
+                      type: string
+                  type: object
+                type: array
               instanced:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
@@ -737,7 +748,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: controller:latest
+        image: 6zar/docker-operator:latest
         livenessProbe:
           httpGet:
             path: /healthz

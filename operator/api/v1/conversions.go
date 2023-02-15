@@ -26,3 +26,6 @@ func (crd *DockerComposeRunner) GetCrdDefinition() *CrdDefinition {
 		Resource:   resource,
 	}
 }
+
+const COMPOSE_ACTION_UP = "up -d"
+const COMPOSE_ACTION_DOWN = "down"
