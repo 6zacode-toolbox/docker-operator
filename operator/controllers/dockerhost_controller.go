@@ -22,7 +22,9 @@ import (
 	"reflect"
 	"strings"
 
+	toolv1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
 	v1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
+
 	"google.golang.org/grpc/status"
 	v1batch "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -74,7 +76,7 @@ func (r *DockerHostReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	log.Log.Info(fmt.Sprintf("Called: %#v", req.NamespacedName))
 
 	//Desired State
-	instance := &v1.DockerHost{}
+	instance := &toolv1.DockerHost{}
 
 	err := r.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
@@ -142,7 +144,7 @@ func (r *DockerHostReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-func (r *DockerHostReconciler) CreateDockerHostCronJob(desiredJob *v1batch.CronJob, instance *v1.DockerHost) error {
+func (r *DockerHostReconciler) CreateDockerHostCronJob(desiredJob *v1batch.CronJob, instance *toolv1.DockerHost) error {
 	err := r.Create(context.TODO(), desiredJob)
 	if err != nil {
 		return nil
