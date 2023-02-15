@@ -43,13 +43,15 @@ func CreateDockerHostCronJob(crd *v1.DockerHost) (*v1batch.CronJob, error) {
 	return cronjob, nil
 }
 
-func CreateDockerComposeRunnerJob(crd *v1.DockerComposeRunner, action string) (*v1batch.Job, error) {
+func CreateDockerComposeRunnerJob(crd *v1.CrdDefinition, action string) (*v1batch.Job, error) {
 	podSpec, _ := CreateDockerComposeRunnerPodSpec(crd.Name, action)
 	jobMinimal := InstantiateMinimalDockerComposeRunnerJob(crd.Name, NamespaceJobs)
-	jobMinimal.Labels = GetLabels(crd.GetCrdDefinition())
+	jobMinimal.Labels = GetLabels(crd)
+	TTL := int32(30)
 	job := &v1batch.Job{
 		ObjectMeta: jobMinimal.ObjectMeta,
 		Spec: v1batch.JobSpec{
+			TTLSecondsAfterFinished: &TTL,
 			Template: apiV1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: jobMinimal.Labels,
@@ -313,10 +315,12 @@ func checkCronJob(job *v1batch.CronJob) {
 func CreateDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.ConfigMap {
 	configMapName := GenerateComposeRunnerConfigMapName(crd.Name)
 	crdConfig := crd.GetCrdDefinition()
+	labels := GetLabels(crdConfig)
 	configMap := &apiV1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapName,
 			Namespace: NamespaceJobs,
+			Labels:    labels,
 		},
 		Data: map[string]string{
 			"DOCKER_CERT_PATH":  "/certs",
@@ -361,27 +365,3 @@ func RandStringRunes(n int) string {
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
-
-/*
-  containers:
-  - name: docker-agent
-    image: 6zar/docker-agent:latest
-    imagePullPolicy: Always
-    env:
-    - name: DOCKER_CERT_PATH
-      value: "/certs"
-    - name: DOCKER_HOST
-      value: "tcp://192.168.2.162:2376"
-    - name: DOCKER_TLS_VERIFY
-      value: "1"
-    command: ['/home/app/docker-agent', 'agent', '--crd-api-version', 'tool.6zacode-toolbox.github.io/v1', '--crd-namespace', 'default', '--crd-instance', 'dockerhost-sample', '--crd-resource', 'dockerhosts']
-    volumeMounts:
-    - mountPath: "/certs"
-      name: docker-certs
-      readOnly: true
-  serviceAccountName: docker-agent-sa
-  volumes:
-  - name: docker-certs
-    secret:
-      secretName: docker-secret
-*/
