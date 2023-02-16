@@ -3,7 +3,17 @@ entries:
   docker-operator:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T00:57:14.044598471Z"
+    created: "2023-02-16T01:28:08.632266343Z"
+    description: A Helm chart for Kubernetes
+    digest: 8ddc14b4b0376fa48805572398774fc41257a77de3191a2fe5c945391198c5fa
+    name: docker-operator
+    type: application
+    urls:
+    - https://6zacode-toolbox.github.io/docker-operator/docker-operator-0.9.0.tgz
+    version: 0.9.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-16T01:28:08.626427218Z"
     description: A Helm chart for Kubernetes
     digest: c44e7a236e28706744e2bcb41f4403d72a750ab8640db7718c57c1a3f7692586
     name: docker-operator
@@ -13,7 +23,7 @@ entries:
     version: 0.8.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T00:57:14.032361512Z"
+    created: "2023-02-16T01:28:08.613141426Z"
     description: A Helm chart for Kubernetes
     digest: 158107461c1b7e7a17a260bd1e43562868efaa4e20ab3c436cd884b1f1c7dfdb
     name: docker-operator
@@ -23,7 +33,7 @@ entries:
     version: 0.7.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T00:57:14.027829512Z"
+    created: "2023-02-16T01:28:08.609037385Z"
     description: A Helm chart for Kubernetes
     digest: 42270b4dc45241b7f32b7a66ae3899ae9c5dc61aa4068ac85f76c83689c7b878
     name: docker-operator
@@ -33,7 +43,7 @@ entries:
     version: 0.6.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T00:57:14.023425596Z"
+    created: "2023-02-16T01:28:08.604760926Z"
     description: A Helm chart for Kubernetes
     digest: 251cbe319935901f261b4f2ececc874da466bad1517e6063832985b860b93a8b
     name: docker-operator
@@ -43,7 +53,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T00:57:14.010741887Z"
+    created: "2023-02-16T01:28:08.599748926Z"
     description: A Helm chart for Kubernetes
     digest: a5fea981f93d9b18544ee58984125822475f05107ceec65d71b2dfb85d3b5c43
     name: docker-operator
@@ -51,4 +61,4 @@ entries:
     urls:
     - https://6zacode-toolbox.github.io/docker-operator/docker-operator-0.4.0.tgz
     version: 0.4.0
-generated: "2023-02-16T00:57:13.991210221Z"
+generated: "2023-02-16T01:28:08.578594426Z"
