@@ -1,0 +1,19 @@
+name: release_repos
+on:
+  release:
+    types: [created]
+
+env:
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  RELEASE_NOTES: "create release on agent repo"
+
+jobs:
+  release-repos:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Update version file
+      run: echo $GITHUB_REF_NAME > VERSION.md
+    - name: Release 6zacode-toolbox/docker-agent
+      run: gh release create -R 6zacode-toolbox/docker-agent ${{ github.REF_NAME }} --notes "${{ env.RELEASE_NOTES }}"
