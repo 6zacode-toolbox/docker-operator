@@ -16,8 +16,11 @@ spec:
   project: default
   source:
     repoURL: 'https://6zacode-toolbox.github.io/docker-operator'
-    targetRevision: 0.10.0
-    chart: docker-operator
+    targetRevision: 0.11.0
+    helm:
+      values: |-
+        useExternalSecret: true
+    chart: docker-operator    
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: operator-system
@@ -34,8 +37,13 @@ spec:
           maxDuration: 5m0s
           factor: 2
 ```
+if set `useExternalSecret`, it will try to use external secrets to populate mandatory secrets. 
 
-## Add secret on the default namespace 
+
+## Install Secrets
+
+### Manually 
+#### Add secret on the default namespace 
 
 ```yaml 
 - apiVersion: v1
@@ -46,46 +54,80 @@ spec:
     name: github
     namespace: default
 ```
-
-
-## How this repo was created
+#### Add secret for docker certs
 
 ```bash 
-docker run --rm -it \
-    --name kubebuilder \
-    --platform linux/amd64 \
-    -w /go/src \
-    -v operator-sdk:/go/pkg \
-    -v $(pwd):/go/src \
-    -v /var/run/docker.sock:/var/run/docker.sock  \
-    --privileged \
-    6zar/kubebuilder
-
-mkdir operator
-
-cd operator
-
-kubebuilder init --domain 6zacode-toolbox.github.io --license apache2 --owner "6zacode-toolbox" --repo github.com/6zacode-toolbox/docker-operator/operator
-
-kubebuilder create api --group tool --version v1 --kind DockerHost --controller --resource
-
-kubebuilder create api --group tool --version v1 --kind DockerComposeRunner --controller --resource
-
-make manifests
-# When doing complex objects start by parts, as serilziation may be tricky
-
-make install
-
-make run
+kubectl create secret generic docker-secret \
+  --from-file=cert.pem=$HOME/certs/docker_host/cert.pem \
+  --from-file=key.pem=$HOME/certs/docker_host/key.pem \
+  --from-file=ca.pem=$HOME/certs/docker_host/ca.pem
 ```
 
-## Error with bad object types
-```bash 
-Error: not all generators ran successfully
-run `controller-gen rbac:roleName=manager-role crd webhook paths=./... output:crd:artifacts:config=config/crd/bases -w` to see all available markers, or `controller-gen rbac:roleName=manager-role crd webhook paths=./... output:crd:artifacts:config=config/crd/bases -h` for usage
-make: *** [Makefile:43: manifests] Error 1
+or
+```yaml 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: docker-secret
+  namespace: default  
+type: Opaque
+data:
+  ca.pem: ....
+  cert.pem: ...
+  key.pem: ...
+  
 ```
 
-```bash 
-https://6zacode-toolbox.github.io/docker-operator/index.yaml
+Reference on how to generate this certs: [here](https://medium.com/p/c95e78817fa6)
+> then use this certs to populate your docker host and your cluster secrets
+
+### Using Secrets Operator
+
+```yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: docker-secret
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  target:
+    name: docker-secret
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: vault-secrets-backend
+  refreshInterval: 10s
+  dataFrom:
+    - extract:      
+        key: /docker-certs
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: github-secret
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  target:
+    name: github
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: vault-secrets-backend
+  refreshInterval: 10s
+  data:
+    - secretKey: GITHUB_TOKEN
+      remoteRef:
+        key: /ci-secrets        
+        property: PERSONAL_ACCESS_TOKEN
+
+```
+
+Note that `/docker-certs` need to be create on vault with, if it doesn't exist already: 
+
+```json
+{
+  "ca.pem": "-----BEGIN CERTIFICATE-----\n....\n-----END CERTIFICATE-----",
+  "cert.pem": "-----BEGIN CERTIFICATE-----\n....\n-----END CERTIFICATE-----",
+  "key.pem": "-----BEGIN RSA PRIVATE KEY-----\n....\n-----END RSA PRIVATE KEY-----"
+}
 ```

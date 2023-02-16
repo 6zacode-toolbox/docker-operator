@@ -3,7 +3,17 @@ entries:
   docker-operator:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.833128717Z"
+    created: "2023-02-16T15:51:14.771077296Z"
+    description: A Helm chart for Kubernetes
+    digest: 46c67a89a5ec30c9537c77703c11b91d67d8f7e7695d462d3e47c83d33146f0a
+    name: docker-operator
+    type: application
+    urls:
+    - https://6zacode-toolbox.github.io/docker-operator/docker-operator-0.11.0.tgz
+    version: 0.11.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-16T15:51:14.763166254Z"
     description: A Helm chart for Kubernetes
     digest: 28c9566acf37eb83a60a967dd46e5fb893769bdf4767f1940ea5e08b43734224
     name: docker-operator
@@ -13,7 +23,7 @@ entries:
     version: 0.10.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.865155008Z"
+    created: "2023-02-16T15:51:14.801247962Z"
     description: A Helm chart for Kubernetes
     digest: 8ddc14b4b0376fa48805572398774fc41257a77de3191a2fe5c945391198c5fa
     name: docker-operator
@@ -23,7 +33,7 @@ entries:
     version: 0.9.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.858341967Z"
+    created: "2023-02-16T15:51:14.796722254Z"
     description: A Helm chart for Kubernetes
     digest: c44e7a236e28706744e2bcb41f4403d72a750ab8640db7718c57c1a3f7692586
     name: docker-operator
@@ -33,7 +43,7 @@ entries:
     version: 0.8.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.853143342Z"
+    created: "2023-02-16T15:51:14.792047962Z"
     description: A Helm chart for Kubernetes
     digest: 158107461c1b7e7a17a260bd1e43562868efaa4e20ab3c436cd884b1f1c7dfdb
     name: docker-operator
@@ -43,7 +53,7 @@ entries:
     version: 0.7.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.849089508Z"
+    created: "2023-02-16T15:51:14.786647379Z"
     description: A Helm chart for Kubernetes
     digest: 42270b4dc45241b7f32b7a66ae3899ae9c5dc61aa4068ac85f76c83689c7b878
     name: docker-operator
@@ -53,7 +63,7 @@ entries:
     version: 0.6.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.841941675Z"
+    created: "2023-02-16T15:51:14.781721212Z"
     description: A Helm chart for Kubernetes
     digest: 251cbe319935901f261b4f2ececc874da466bad1517e6063832985b860b93a8b
     name: docker-operator
@@ -63,7 +73,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-02-16T01:40:05.837514008Z"
+    created: "2023-02-16T15:51:14.775144712Z"
     description: A Helm chart for Kubernetes
     digest: a5fea981f93d9b18544ee58984125822475f05107ceec65d71b2dfb85d3b5c43
     name: docker-operator
@@ -71,4 +81,4 @@ entries:
     urls:
     - https://6zacode-toolbox.github.io/docker-operator/docker-operator-0.4.0.tgz
     version: 0.4.0
-generated: "2023-02-16T01:40:05.806726467Z"
+generated: "2023-02-16T15:51:14.743982421Z"
