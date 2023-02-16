@@ -16,7 +16,7 @@ spec:
   project: default
   source:
     repoURL: 'https://6zacode-toolbox.github.io/docker-operator'
-    targetRevision: 0.7.0
+    targetRevision: 0.10.0
     chart: docker-operator
   destination:
     server: 'https://kubernetes.default.svc'
