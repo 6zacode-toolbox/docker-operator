@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var NamespaceJobs = "default"
+var NamespaceJobs = "operator-system"
 var ServiceAccountJob = "docker-agent-sa"
 var ImageJob = "6zar/docker-agent:latest"
 
