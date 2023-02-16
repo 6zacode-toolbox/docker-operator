@@ -2,6 +2,51 @@
 A simple operator to help manage dokcer based hosts from a Kubernetes cluster to leverage gitops style automations to manage workloads on small machines like raspberry-pis
 
 
+# How to Use this operator
+
+## Use helm to deploy the controller
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: 6zacode-docker-operator
+  namespace: argocd
+spec: 
+  project: default
+  source:
+    repoURL: 'https://6zacode-toolbox.github.io/docker-operator'
+    targetRevision: 0.7.0
+    chart: docker-operator
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: operator-system
+  syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - CreateNamespace=true
+      retry:
+        limit: 5
+        backoff:
+          duration: 5s
+          maxDuration: 5m0s
+          factor: 2
+```
+
+## Add secret on the default namespace 
+
+```yaml 
+- apiVersion: v1
+  data:
+    GITHUB_TOKEN: some_github_token
+  kind: Secret
+  metadata:
+    name: github
+    namespace: default
+```
+
 
 ## How this repo was created
 

@@ -48,6 +48,11 @@ type DockerComposeRunnerReconciler struct {
 //+kubebuilder:rbac:groups=tool.6zacode-toolbox.github.io,resources=dockercomposerunners,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tool.6zacode-toolbox.github.io,resources=dockercomposerunners/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tool.6zacode-toolbox.github.io,resources=dockercomposerunners/finalizers,verbs=update
+//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get
+//+kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=batch,resources=cronjobs/status,verbs=get
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
