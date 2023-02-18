@@ -10,7 +10,6 @@ metadata:
   name: dockercomposerunner-sample
 spec:
   # TODO(user): Add fields here
-  #resourceOwner: dockerhost-sample
-  hostip: "192.168.2.162"
+  resourceOwner: dockerhost-sample  
   composeFile: docker-compose.yaml
   repoAddress: github.com/6zacode-toolbox/docker-compose-demo.git

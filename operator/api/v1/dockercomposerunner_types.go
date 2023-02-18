@@ -29,7 +29,8 @@ type DockerComposeRunnerSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of DockerComposeRunner. Edit dockercomposerunner_types.go to remove/update
-	HostIP        string   `json:"hostip"`
+	HostIP        string   `json:"hostip,omitempty"`
+	ResourceOwner string   `json:"resourceOwner,omitempty"`
 	ComposeFile   string   `json:"composeFile"`
 	ExecutionPath string   `json:"executionPath,omitempty"`
 	RepoAddress   string   `json:"repoAddress"`
@@ -41,6 +42,7 @@ type DockerComposeRunnerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Instanced     bool            `json:"instanced,omitempty"`
+	Validated     bool            `json:"validated,omitempty"`
 	ComposeStatus []ComposeStatus `json:"composeStatus,omitempty"`
 }
 

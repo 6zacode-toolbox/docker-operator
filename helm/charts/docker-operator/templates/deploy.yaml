@@ -62,9 +62,10 @@ spec:
                 type: array
               repoAddress:
                 type: string
+              resourceOwner:
+                type: string
             required:
             - composeFile
-            - hostip
             - repoAddress
             type: object
           status:
@@ -85,6 +86,8 @@ spec:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
                   this file'
+                type: boolean
+              validated:
                 type: boolean
             type: object
         type: object
