@@ -16,7 +16,7 @@ spec:
   project: default
   source:
     repoURL: 'https://6zacode-toolbox.github.io/docker-operator'
-    targetRevision: 0.11.0
+    targetRevision: 0.12.0
     helm:
       values: |-
         useExternalSecret: true
@@ -130,4 +130,12 @@ Note that `/docker-certs` need to be create on vault with, if it doesn't exist a
   "cert.pem": "-----BEGIN CERTIFICATE-----\n....\n-----END CERTIFICATE-----",
   "key.pem": "-----BEGIN RSA PRIVATE KEY-----\n....\n-----END RSA PRIVATE KEY-----"
 }
+```
+
+## Sample of `config` file for docker
+
+```bash
+Host 192.168.2.*
+   StrictHostKeyChecking no
+   UserKnownHostsFile=/dev/null
 ```
