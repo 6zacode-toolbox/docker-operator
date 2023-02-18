@@ -351,7 +351,7 @@ func checkCronJob(job *v1batch.CronJob) {
 	}
 }
 
-func CreateDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.ConfigMap {
+func CreateTLSDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.ConfigMap {
 	configMapName := GenerateComposeRunnerConfigMapName(crd.Name)
 	crdConfig := crd.GetCrdDefinition()
 	labels := GetLabels(crdConfig)
@@ -376,7 +376,33 @@ func CreateDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.Conf
 		},
 	}
 	return configMap
+}
 
+func CreateSSHDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, sshUser string, hostIp string) *apiV1.ConfigMap {
+	configMapName := GenerateComposeRunnerConfigMapName(crd.Name)
+	crdConfig := crd.GetCrdDefinition()
+	labels := GetLabels(crdConfig)
+	configMap := &apiV1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configMapName,
+			Namespace: NamespaceJobs,
+			Labels:    labels,
+		},
+		Data: map[string]string{
+			"DOCKER_CERT_PATH":  "",
+			"DOCKER_HOST":       "ssh://" + sshUser + "@" + hostIp,
+			"DOCKER_TLS_VERIFY": "",
+			"HOST_IP":           crd.Spec.HostIP,
+			"COMPOSE_FILE":      crd.Spec.ComposeFile,
+			"REPO_ADDRESS":      crd.Spec.RepoAddress,
+			"EXECUTION_PATH":    crd.Spec.ExecutionPath,
+			"CRD_API_VERSION":   crdConfig.APIVersion,
+			"CRD_NAMESPACE":     crdConfig.Namespace,
+			"CRD_NAME":          crdConfig.Name,
+			"CRD_RESOURCE":      crdConfig.Resource,
+		},
+	}
+	return configMap
 }
 
 func GenerateComposeRunnerConfigMapName(crdName string) string {

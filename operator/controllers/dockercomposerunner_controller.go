@@ -37,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	toolv1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
+	v1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
 )
 
 // DockerComposeRunnerReconciler reconciles a DockerComposeRunner object
@@ -67,7 +68,6 @@ type DockerComposeRunnerReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
-
 	/*
 		Logic:
 			If CRD deleted:
@@ -75,33 +75,22 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 				- run down Job
 				- delete configMap and jobs
 			IF not delete is a create/update....
-
 			- Create ConfigMap/Up Job
-
 			If Create:
 				- Create configMap
 				- Run up Job
-
 	*/
 
 	eventType := EventUpdate
-	// TODO(user): your logic here
-	//log.Log.Info(fmt.Sprintf("Called: %#v", req))
 	log.Log.Info(fmt.Sprintf("Called: %#v", req.NamespacedName))
-
 	//Desired State
 	instance := &toolv1.DockerComposeRunner{}
-
 	err := r.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		log.Log.Info(string(err.Error()))
 		status, _ := status.FromError(err)
 		log.Log.Info(status.Code().String())
 		if errork8s.IsNotFound(err) || strings.Contains(string(err.Error()), "not found") {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			// CRD was removed (DELETE EVENT)
-			// How to remove the objects?
 			r.RunComposeDownJob(req.Name, NamespaceJobs)
 			eventType = EventDelete
 			log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
@@ -130,8 +119,6 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 		log.Log.Error(err, "Event Type(err getting currentState):"+eventType)
 		return reconcile.Result{}, err
 	}
-	//checkCronJob(currentStateJob)
-
 	//missing job, creating one
 	if currentStateJob == nil {
 		eventType = EventCreate
@@ -139,7 +126,7 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 	//If is not delete(early event), if it didn't exist it must be deleted.
 	if currentStateJob == nil {
-		err = r.RunComposeUpJob(desiredJob, instance)
+		err = r.RunComposeUpJob(instance)
 		if err != nil {
 			log.Log.Error(err, "Event Type(err running compose up):"+eventType)
 			return reconcile.Result{}, err
@@ -152,7 +139,7 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	if eventType == EventUpdate && currentStateJob != nil {
 		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
 			r.RunComposeDownJob(req.Name, NamespaceJobs)
-			err = r.RunComposeUpJob(desiredJob, instance)
+			err = r.RunComposeUpJob(instance)
 			if err != nil {
 				log.Log.Error(err, "Event Type(err running compose down/up):"+eventType)
 				return reconcile.Result{}, err
@@ -167,9 +154,26 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	return ctrl.Result{}, nil
 }
 
-func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job, instance *toolv1.DockerComposeRunner) error {
-	//Create ConfigMap
+func (r *DockerComposeRunnerReconciler) RunComposeUpJob(instance *toolv1.DockerComposeRunner) error {
+
+	usingSSHConnection := false
+	dockerHostCrd := &toolv1.DockerHost{}
+	if instance.Spec.ResourceOwner != "" {
+		err := r.Get(context.TODO(), types.NamespacedName{Name: instance.Spec.ResourceOwner, Namespace: instance.Namespace}, dockerHostCrd)
+		if err != nil {
+			log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
+			return err
+		} else {
+			if dockerHostCrd.Spec.SSHConnection != (v1.SSHConnection{}) {
+				usingSSHConnection = true
+			}
+		}
+		log.Log.Info(fmt.Sprintf("Using SSH Connection: %t", usingSSHConnection))
+		log.Log.Info(fmt.Sprintf("CRD: %v", dockerHostCrd))
+	}
+
 	log.Log.Info("RunComposeUpJob:" + instance.Name)
+
 	definition := instance.GetCrdDefinition()
 	cms := &apiV1.ConfigMap{}
 	err := r.DeleteAllOf(context.TODO(), cms, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
@@ -177,7 +181,13 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job,
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", definition.Namespace, definition.Name))
 		return err
 	}
-	configMap := CreateDockerComposeRunnerConfigMap(instance)
+	configMap := &apiV1.ConfigMap{}
+	if usingSSHConnection {
+		configMap = CreateSSHDockerComposeRunnerConfigMap(instance, dockerHostCrd.Spec.SSHConnection.SSHUser, dockerHostCrd.Spec.HostIP)
+	} else {
+		configMap = CreateTLSDockerComposeRunnerConfigMap(instance)
+	}
+
 	err = r.Create(context.TODO(), configMap)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating configmap %s/%s\n", instance.Namespace, configMap))
@@ -190,6 +200,22 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(desiredJob *v1batch.Job,
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
 		return err
 	}
+	return nil
+}
+
+func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace string) error {
+	defintion := &toolv1.CrdDefinition{
+		Name:       name,
+		Namespace:  namespace,
+		APIVersion: "tool.6zacode-toolbox.github.io/v1",
+		Resource:   "dockercomposerunners",
+	}
+	err := r.CleanAndCreateJob(defintion, toolv1.COMPOSE_ACTION_DOWN)
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", defintion.Namespace, defintion.Name))
+		return err
+	}
+
 	return nil
 }
 
@@ -224,36 +250,6 @@ func (r *DockerComposeRunnerReconciler) CleanAndCreateJob(definition *toolv1.Crd
 		return err
 
 	}
-	return nil
-}
-func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace string) error {
-	//Delete ConfigMap
-	/*
-		configMap := &apiV1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      GenerateComposeRunnerConfigMapName(name),
-				Namespace: namespace,
-			},
-		}
-		_ = r.Delete(context.TODO(), configMap)
-	*/
-	//Err is irrelevant here, as most of the case the delete is no-ops as the resource should not exist yet.
-
-	// !TODO: Add some pod or action to clean the jobs dispached.
-	// USE TTL: https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/#caveats
-
-	defintion := &toolv1.CrdDefinition{
-		Name:       name,
-		Namespace:  namespace,
-		APIVersion: "tool.6zacode-toolbox.github.io/v1",
-		Resource:   "dockercomposerunners",
-	}
-	err := r.CleanAndCreateJob(defintion, toolv1.COMPOSE_ACTION_DOWN)
-	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", defintion.Namespace, defintion.Name))
-		return err
-	}
-
 	return nil
 }
 
