@@ -19,7 +19,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 
 	toolv1 "github.com/6zacode-toolbox/docker-operator/operator/api/v1"
@@ -103,52 +102,59 @@ func (r *DockerHostReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, nil
 	}
 
-	desiredJob, err := CreateDockerHostCronJob(instance)
-	if err != nil {
-		return reconcile.Result{}, err
+	if !instance.Status.Validated {
+		instance, err := ValidateDockerHost(instance)
+		instance.Status.Error = ""
+		instance.Status.SuccessValidation = true
+		if err != nil {
+			log.Log.Error(err, fmt.Sprintf("Error Validating object %s/%s", instance.Namespace, instance.Name))
+			instance.Status.Error = err.Error()
+			instance.Status.SuccessValidation = false
+		}
+		instance.Status.Validated = true
+		err = r.Status().Update(context.Background(), instance)
 	}
+	if instance.Status.SuccessValidation && !instance.Status.Instanced {
+		r.RemoveOldDockerHostCronJob(instance)
+		desiredJob, err := CreateDockerHostCronJob(instance)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
 
-	currentStateJob, err := r.GetDockerHostCurrentState(req.Name)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-	checkCronJob(currentStateJob)
+		currentStateJob, err := r.GetDockerHostCurrentState(req.Name)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		checkCronJob(currentStateJob)
 
-	//missing job, creating one
-	if currentStateJob == nil {
-		eventType = EventCreate
-		log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
-	}
-	//If is not delete(early event), if it didn't exist it must be deleted.
-	if currentStateJob == nil {
+		//missing job, creating one
+		if currentStateJob == nil {
+			eventType = EventCreate
+			log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
+		}
 		err = r.CreateDockerHostCronJob(desiredJob, instance)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-		return reconcile.Result{}, nil
-	}
 
-	//Update detected, but no job exist
-	if eventType == EventUpdate && currentStateJob != nil {
-		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
-			r.DeleteDockerHostCronJob(req.Name, NamespaceJobs)
-			err = r.CreateDockerHostCronJob(desiredJob, instance)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-		}
-		return reconcile.Result{}, nil
-	} else {
-		log.Log.Info(fmt.Sprintf("Unkown State: %#v", eventType))
 	}
 	return ctrl.Result{}, nil
 }
-
+func (r *DockerHostReconciler) RemoveOldDockerHostCronJob(instance *toolv1.DockerHost) error {
+	cronjob := &v1batch.CronJob{}
+	definition := instance.GetCrdDefinition()
+	err := r.DeleteAllOf(context.TODO(), cronjob, client.InNamespace(instance.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
+	if err != nil {
+		log.Log.Error(err, fmt.Sprintf("Error removing job object %s/%s\n", definition.Namespace, definition.Name))
+	}
+	return err
+}
 func (r *DockerHostReconciler) CreateDockerHostCronJob(desiredJob *v1batch.CronJob, instance *toolv1.DockerHost) error {
 	err := r.Create(context.TODO(), desiredJob)
 	if err != nil {
-		return nil
+		return err
 	}
+
 	instance.Status.Instanced = true
 	err = r.Status().Update(context.Background(), instance)
 	return err

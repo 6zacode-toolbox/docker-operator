@@ -184,12 +184,17 @@ type DockerContainerSummary struct {
 	Status       string `json:"Status,omitempty"`
 }
 
+const ConnectionModeSSH = "ssh"
+const ConnectionModeTLS = "tls"
+
 // DockerHostSpec defines the desired state of DockerHost
 type DockerHostSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
 	HostIP string `json:"hostip,omitempty"`
+
+	SSHConnection SSHConnection `json:"sshConnection,omitempty"`
 
 	//Possible Improvements
 	// - Frequency of check in seconds
@@ -198,14 +203,21 @@ type DockerHostSpec struct {
 	// - ...
 }
 
+type SSHConnection struct {
+	SSHUser string `json:"sshUser"`
+}
+
 // DockerHostStatus defines the observed state of DockerHost
 type DockerHostStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Containers []DockerContainerSummary `json:"containers,omitempty"`
-	DockerHost DockerInfo               `json:"host,omitempty"`
-	Instanced  bool                     `json:"instanced,omitempty"`
+	Containers        []DockerContainerSummary `json:"containers,omitempty"`
+	DockerHost        DockerInfo               `json:"host,omitempty"`
+	Instanced         bool                     `json:"instanced,omitempty"`
+	SuccessValidation bool                     `json:"successValidation,omitempty"`
+	Validated         bool                     `json:"validated,omitempty"`
+	Error             string                   `json:"error,omitempty"`
 	//Sample string `json:"sample,omitempty"`
 }
 

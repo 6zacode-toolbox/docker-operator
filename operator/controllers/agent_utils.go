@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"time"
@@ -12,7 +13,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var NamespaceJobs = "operator-system"
+// var NamespaceJobs = "operator-system"
+var NamespaceJobs = "default"
 var ServiceAccountJob = "docker-agent-sa"
 var ImageJob = "6zar/docker-agent:latest"
 
@@ -22,10 +24,20 @@ const (
 	EventDelete string = "Delete"
 )
 
+func ValidateDockerHost(crd *v1.DockerHost) (*v1.DockerHost, error) {
+	if crd.Spec.HostIP == "" {
+		err := fmt.Errorf("error on validation: missing HostIP")
+		log.Log.Error(err, fmt.Sprintf("Missing HostIP infomration on CRD:%s/%s", crd.Namespace, crd.Name))
+		return crd, err
+	}
+	return crd, nil
+}
+
 func CreateDockerHostCronJob(crd *v1.DockerHost) (*v1batch.CronJob, error) {
 	podSpec, _ := CreateDockerHostPodSpec(crd)
 	cronjobMinimal := InstantiateMinimalDockerHostCronJob(crd.Name, NamespaceJobs)
 
+	cronjobMinimal.Labels = GetLabels(crd.GetCrdDefinition())
 	cronjob := &v1batch.CronJob{
 		ObjectMeta: cronjobMinimal.ObjectMeta,
 		Spec: v1batch.CronJobSpec{
@@ -67,18 +79,6 @@ func CreateDockerHostPodSpec(crd *v1.DockerHost) (apiV1.PodSpec, error) {
 	crdConfig := crd.GetCrdDefinition()
 	env := []apiV1.EnvVar{
 		{
-			Name:  "DOCKER_CERT_PATH",
-			Value: "/certs",
-		},
-		{
-			Name:  "DOCKER_HOST",
-			Value: "tcp://" + crd.Spec.HostIP + ":2376",
-		},
-		{
-			Name:  "DOCKER_TLS_VERIFY",
-			Value: "1",
-		},
-		{
 			Name:  "CRD_API_VERSION",
 			Value: crdConfig.APIVersion,
 		},
@@ -96,20 +96,44 @@ func CreateDockerHostPodSpec(crd *v1.DockerHost) (apiV1.PodSpec, error) {
 		},
 	}
 	command := "agent"
-
-	result := CreateDockerAgentPod(env, command)
+	envEnhanced := AddHostConnectionVars(crd, &env)
+	result := CreateDockerAgentPod(*envEnhanced, command)
 	return result, nil
+}
+func AddHostConnectionVars(crd *v1.DockerHost, varList *[]apiV1.EnvVar) *[]apiV1.EnvVar {
+	var hostVar []apiV1.EnvVar
+	//for cert setups
+	if crd.Spec.SSHConnection == (v1.SSHConnection{}) {
+		hostVar = []apiV1.EnvVar{
+			{
+				Name:  "DOCKER_CERT_PATH",
+				Value: "/certs",
+			},
+			{
+				Name:  "DOCKER_HOST",
+				Value: "tcp://" + crd.Spec.HostIP + ":2376",
+			},
+			{
+				Name:  "DOCKER_TLS_VERIFY",
+				Value: "1",
+			},
+		}
+	} else {
+		hostVar = []apiV1.EnvVar{
+			{
+				Name:  "DOCKER_HOST",
+				Value: "ssh://" + crd.Spec.SSHConnection.SSHUser + "@" + crd.Spec.HostIP,
+			},
+		}
+	}
+
+	for _, v := range hostVar {
+		*varList = append(*varList, v)
+	}
+	return varList
 }
 
 func CreateDockerComposeRunnerPodSpec(name, action string) (apiV1.PodSpec, error) {
-	/*
-	   echo $COMPOSE_FILE
-	   echo $REPO_ADDRESS
-	   echo $EXECUTION_PATH
-	   echo $GITHUB_TOKEN
-	   # "up -d" or "down"
-	   echo $ACTION
-	*/
 	configMapNMame := GenerateComposeRunnerConfigMapName(name)
 	env := []apiV1.EnvVar{
 		{
@@ -252,12 +276,19 @@ func CreateDockerAgentPod(env []apiV1.EnvVar, command string) apiV1.PodSpec {
 		ImagePullPolicy: apiV1.PullAlways,
 		Env:             env,
 		Command:         []string{"/home/app/docker-agent"},
-		Args:            []string{command, "--crd-api-version", "$(CRD_API_VERSION)", "--crd-namespace", "$(CRD_NAMESPACE)", "--crd-instance", "$(CRD_NAME)", "--crd-resource", "$(CRD_RESOURCE)"},
-		VolumeMounts: []apiV1.VolumeMount{{
-			MountPath: "/certs",
-			Name:      "docker-certs",
-			ReadOnly:  true,
-		},
+		//Command: []string{"tail", "-f", "/dev/null"},
+		Args: []string{command, "--crd-api-version", "$(CRD_API_VERSION)", "--crd-namespace", "$(CRD_NAMESPACE)", "--crd-instance", "$(CRD_NAME)", "--crd-resource", "$(CRD_RESOURCE)"},
+		VolumeMounts: []apiV1.VolumeMount{
+			{
+				MountPath: "/certs",
+				Name:      "docker-certs",
+				ReadOnly:  true,
+			},
+			{
+				MountPath: "/home/app/.ssh",
+				Name:      "docker-ssh-volume",
+				ReadOnly:  true,
+			},
 		},
 	}
 	result := apiV1.PodSpec{
@@ -270,6 +301,14 @@ func CreateDockerAgentPod(env []apiV1.EnvVar, command string) apiV1.PodSpec {
 				VolumeSource: apiV1.VolumeSource{
 					Secret: &apiV1.SecretVolumeSource{
 						SecretName: "docker-secret",
+					},
+				},
+			},
+			{
+				Name: "docker-ssh-volume",
+				VolumeSource: apiV1.VolumeSource{
+					Secret: &apiV1.SecretVolumeSource{
+						SecretName: "docker-ssh",
 					},
 				},
 			},
