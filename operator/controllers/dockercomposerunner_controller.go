@@ -66,6 +66,7 @@ type DockerComposeRunnerReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
+
 func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 	/*
@@ -111,6 +112,15 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	if !instance.Status.Validated {
 		instance.Status.Validated = true
 		err = r.Status().Update(context.Background(), instance)
+		//types.JSONPatchType
+
+		//kubectl patch pod valid-pod --type='json' -p='[{"op": "replace", "path": "/spec/containers/0/image", "value":"new image"}]'
+		//err = r.Status().Patch(context.Background(), instance, patch)
+		err = r.Status().Patch(context.TODO(), instance, client.Apply)
+		if err != nil {
+			log.Log.Error(err, "Event Type(err getting currentState):"+eventType)
+			return reconcile.Result{}, err
+		}
 	}
 	desiredJob, err := CreateDockerComposeRunnerJob(instance.GetCrdDefinition(), "up -d")
 	if err != nil {
