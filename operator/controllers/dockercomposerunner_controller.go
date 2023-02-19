@@ -19,7 +19,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"google.golang.org/grpc/status"
@@ -110,19 +109,27 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 
 	if !instance.Status.Validated {
-		instance.Status.Validated = true
-		//err = r.Status().Update(context.Background(), instance)
-		//types.JSONPatchType
-
-		//kubectl patch pod valid-pod --type='json' -p='[{"op": "replace", "path": "/spec/containers/0/image", "value":"new image"}]'
-		//err = r.Status().Patch(context.Background(), instance, patch)
-		err = r.Status().Patch(context.TODO(), instance, client.Merge)
+		patchInstance := &toolv1.DockerComposeRunner{
+			ObjectMeta: instance.ObjectMeta,
+			Status: v1.DockerComposeRunnerStatus{
+				Validated: true,
+			},
+		}
+		err = r.Status().Update(context.TODO(), patchInstance)
 		if err != nil {
-			log.Log.Error(err, "Event Type(err getting currentState):"+eventType)
+			log.Log.Error(err, "Event Type(err Patch status):"+eventType)
 			return reconcile.Result{}, err
 		}
+		log.Log.Info("Status update - validated")
 	}
-	desiredJob, err := CreateDockerComposeRunnerJob(instance.GetCrdDefinition(), "up -d")
+
+	err = r.CleanOldJob(instance.GetCrdDefinition())
+	if err != nil {
+		log.Log.Error(err, "Error cleaning previous jobs")
+		return reconcile.Result{}, err
+	}
+
+	_, err = CreateDockerComposeRunnerJob(instance.GetCrdDefinition(), "up -d")
 	if err != nil {
 		log.Log.Error(err, "Event Type(err getting desiredState):"+eventType)
 		return reconcile.Result{}, err
@@ -140,29 +147,15 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 	//If is not delete(early event), if it didn't exist it must be deleted.
 	if currentStateJob == nil {
-		err = r.RunComposeUpJob(instance)
-		if err != nil {
-			log.Log.Error(err, "Event Type(err running compose up):"+eventType)
-			return reconcile.Result{}, err
-		}
-		log.Log.Info("Event Type(post compose up):" + eventType)
-		return reconcile.Result{}, nil
+		eventType = EventCreate
+		log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
 	}
 
 	//Update detected, but no job exist
-	if eventType == EventUpdate && currentStateJob != nil {
-		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
-			r.RunComposeDownJob(req.Name, NamespaceJobs)
-			err = r.RunComposeUpJob(instance)
-			if err != nil {
-				log.Log.Error(err, "Event Type(err running compose down/up):"+eventType)
-				return reconcile.Result{}, err
-			}
-		}
-		log.Log.Info("Event Type(post running compose down/up):" + eventType)
-		return reconcile.Result{}, nil
-	} else {
-		log.Log.Info(fmt.Sprintf("Unkown State: %#v", eventType))
+	err = r.RunComposeUpJob(instance)
+	if err != nil {
+		log.Log.Error(err, "Event Type(err running compose down/up):"+eventType)
+		return reconcile.Result{}, err
 	}
 	log.Log.Info("Event Type(final return):" + eventType)
 	return ctrl.Result{}, nil
@@ -208,7 +201,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(instance *toolv1.DockerC
 
 	}
 
-	err = r.CleanAndCreateJob(instance.GetCrdDefinition(), toolv1.COMPOSE_ACTION_UP)
+	err = r.CreateJob(instance.GetCrdDefinition(), toolv1.COMPOSE_ACTION_UP)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", instance.Namespace, instance.Name))
 		return err
@@ -223,7 +216,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace
 		APIVersion: "tool.6zacode-toolbox.github.io/v1",
 		Resource:   "dockercomposerunners",
 	}
-	err := r.CleanAndCreateJob(defintion, toolv1.COMPOSE_ACTION_DOWN)
+	err := r.CreateJob(defintion, toolv1.COMPOSE_ACTION_DOWN)
 	if err != nil {
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", defintion.Namespace, defintion.Name))
 		return err
@@ -232,7 +225,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeDownJob(name string, namespace
 	return nil
 }
 
-func (r *DockerComposeRunnerReconciler) CleanAndCreateJob(definition *toolv1.CrdDefinition, action string) error {
+func (r *DockerComposeRunnerReconciler) CleanOldJob(definition *toolv1.CrdDefinition) error {
 	//remove old jobs
 	jobs := &v1batch.Job{}
 	err := r.DeleteAllOf(context.TODO(), jobs, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
@@ -249,6 +242,9 @@ func (r *DockerComposeRunnerReconciler) CleanAndCreateJob(definition *toolv1.Crd
 		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s\n", definition.Namespace, definition.Name))
 		return err
 	}
+	return nil
+}
+func (r *DockerComposeRunnerReconciler) CreateJob(definition *toolv1.CrdDefinition, action string) error {
 
 	//create new job
 	job, err := CreateDockerComposeRunnerJob(definition, action)
@@ -271,9 +267,19 @@ func (r *DockerComposeRunnerReconciler) CreateDockerComposeRunnerJob(desiredJob 
 	if err != nil {
 		return nil
 	}
-	instance.Status.Instanced = true
+	patchInstance := &toolv1.DockerComposeRunner{
+		ObjectMeta: instance.ObjectMeta,
+		Status: v1.DockerComposeRunnerStatus{
+			Instanced: true,
+		},
+	}
+	//err = r.Status().Update(context.TODO(), patchInstance)
 	//err = r.Status().Update(context.Background(), instance)
-	err = r.Status().Patch(context.TODO(), instance, client.Merge)
+	log.Log.Info("Status update - instatiated")
+	err = r.Status().Patch(context.TODO(), patchInstance, client.Merge)
+	if err != nil {
+		log.Log.Error(err, "Event Type(err Patch status).")
+	}
 	return err
 }
 

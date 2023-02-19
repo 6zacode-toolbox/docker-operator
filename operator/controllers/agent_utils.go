@@ -13,13 +13,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var NamespaceJobs = "operator-system"
-
-// !TODO: Set by LD Flags on Dockerfile
-// var NamespaceJobs = "default"
-var ServiceAccountJob = "docker-agent-sa"
-var ImageJob = "6zar/docker-agent:latest"
-
 const (
 	EventCreate string = "Create"
 	EventUpdate string = "Update"
