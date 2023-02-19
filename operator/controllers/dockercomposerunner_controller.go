@@ -102,12 +102,16 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 		return reconcile.Result{}, err
 	}
 	// Check if Job was already created:
-	if instance.Status.Instanced {
+	if instance.Status.Instanced || instance.Status.Validated {
 		// nothing to be done
 		log.Log.Info("Event Type(object instantiated):" + eventType)
 		return reconcile.Result{}, nil
 	}
 
+	if !instance.Status.Validated {
+		instance.Status.Validated = true
+		err = r.Status().Update(context.Background(), instance)
+	}
 	desiredJob, err := CreateDockerComposeRunnerJob(instance.GetCrdDefinition(), "up -d")
 	if err != nil {
 		log.Log.Error(err, "Event Type(err getting desiredState):"+eventType)
