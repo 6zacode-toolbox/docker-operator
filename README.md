@@ -16,7 +16,7 @@ spec:
   project: default
   source:
     repoURL: 'https://6zacode-toolbox.github.io/docker-operator'
-    targetRevision: 0.12.0
+    targetRevision: 0.16.0
     helm:
       values: |-
         useExternalSecret: true
@@ -84,6 +84,23 @@ Reference on how to generate this certs: [here](https://medium.com/p/c95e78817fa
 ### Using Secrets Operator
 
 ```yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: docker-ssh
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  target:
+    name: docker-ssh
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: vault-secrets-backend
+  refreshInterval: 10s
+  dataFrom:
+    - extract:      
+        key: /docker-ssh
+---
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
