@@ -39,3 +39,9 @@ make: *** [Makefile:43: manifests] Error 1
 ```bash 
 https://6zacode-toolbox.github.io/docker-operator/index.yaml
 ```
+
+## Building notes
+
+```bash
+go build -ldflags="-X 'controllers.NamespaceJobs=operator-system'"
+```
