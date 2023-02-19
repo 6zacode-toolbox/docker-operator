@@ -14,6 +14,7 @@ import (
 )
 
 // var NamespaceJobs = "operator-system"
+// Set by LD Flags on Dockerfile
 var NamespaceJobs = "default"
 var ServiceAccountJob = "docker-agent-sa"
 var ImageJob = "6zar/docker-agent:latest"
