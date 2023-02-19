@@ -111,12 +111,12 @@ func (r *DockerComposeRunnerReconciler) Reconcile(ctx context.Context, req ctrl.
 
 	if !instance.Status.Validated {
 		instance.Status.Validated = true
-		err = r.Status().Update(context.Background(), instance)
+		//err = r.Status().Update(context.Background(), instance)
 		//types.JSONPatchType
 
 		//kubectl patch pod valid-pod --type='json' -p='[{"op": "replace", "path": "/spec/containers/0/image", "value":"new image"}]'
 		//err = r.Status().Patch(context.Background(), instance, patch)
-		err = r.Status().Patch(context.TODO(), instance, client.Apply)
+		err = r.Status().Patch(context.TODO(), instance, client.Merge)
 		if err != nil {
 			log.Log.Error(err, "Event Type(err getting currentState):"+eventType)
 			return reconcile.Result{}, err
@@ -272,7 +272,8 @@ func (r *DockerComposeRunnerReconciler) CreateDockerComposeRunnerJob(desiredJob 
 		return nil
 	}
 	instance.Status.Instanced = true
-	err = r.Status().Update(context.Background(), instance)
+	//err = r.Status().Update(context.Background(), instance)
+	err = r.Status().Patch(context.TODO(), instance, client.Merge)
 	return err
 }
 
