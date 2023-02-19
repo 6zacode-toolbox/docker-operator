@@ -169,7 +169,6 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(instance *toolv1.DockerC
 			}
 		}
 		log.Log.Info(fmt.Sprintf("Using SSH Connection: %t", usingSSHConnection))
-		log.Log.Info(fmt.Sprintf("CRD: %v", dockerHostCrd))
 	}
 
 	log.Log.Info("RunComposeUpJob:" + instance.Name)
