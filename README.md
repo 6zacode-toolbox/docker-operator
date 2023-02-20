@@ -16,7 +16,7 @@ spec:
   project: default
   source:
     repoURL: 'https://6zacode-toolbox.github.io/docker-operator'
-    targetRevision: 0.20.0
+    targetRevision: 0.21.0
     helm:
       values: |-
         useExternalSecret: true

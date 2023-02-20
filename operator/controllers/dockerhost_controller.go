@@ -145,7 +145,7 @@ func (r *DockerHostReconciler) RemoveOldDockerHostCronJob(instance *toolv1.Docke
 	definition := instance.GetCrdDefinition()
 	err := r.DeleteAllOf(context.TODO(), cronjob, client.InNamespace(instance.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error removing job object %s/%s\n", definition.Namespace, definition.Name))
+		log.Log.Error(err, fmt.Sprintf("Error removing job object %s/%s", definition.Namespace, definition.Name))
 	}
 	return err
 }
@@ -164,7 +164,7 @@ func (r *DockerHostReconciler) DeleteDockerHostCronJob(name string, namespace st
 	job := InstantiateMinimalDockerHostCronJob(name, namespace)
 	err := r.Delete(context.TODO(), job)
 	if err != nil {
-		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", namespace, job))
+		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s", namespace, job))
 		return err
 
 	}
@@ -176,7 +176,7 @@ func (r *DockerHostReconciler) GetDockerHostCurrentState(crdName string) (*v1bat
 	jobFound := &v1batch.CronJob{}
 	err := r.Get(context.TODO(), types.NamespacedName{Name: job.Name, Namespace: NamespaceJobs}, jobFound)
 	if err != nil && errors.IsNotFound(err) {
-		log.Log.Info(fmt.Sprintf("Not Found Job %s/%s\n", NamespaceJobs, job.Name))
+		log.Log.Info(fmt.Sprintf("Not Found Job %s/%s", NamespaceJobs, job.Name))
 		jobFound = nil
 	}
 	return jobFound, nil

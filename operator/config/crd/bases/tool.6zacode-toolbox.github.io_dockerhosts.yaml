@@ -48,6 +48,10 @@ spec:
           status:
             description: DockerHostStatus defines the observed state of DockerHost
             properties:
+              appConfigMap:
+                additionalProperties:
+                  type: string
+                type: object
               containers:
                 items:
                   properties:
