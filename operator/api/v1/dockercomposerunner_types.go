@@ -43,6 +43,7 @@ type DockerComposeRunnerStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	Instanced     bool            `json:"instanced,omitempty"`
 	Validated     bool            `json:"validated,omitempty"`
+	ConfigMapName string          `json:"configMapName,omitempty"`
 	ComposeStatus []ComposeStatus `json:"composeStatus,omitempty"`
 }
 

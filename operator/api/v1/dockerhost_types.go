@@ -218,6 +218,7 @@ type DockerHostStatus struct {
 	SuccessValidation bool                     `json:"successValidation,omitempty"`
 	Validated         bool                     `json:"validated,omitempty"`
 	Error             string                   `json:"error,omitempty"`
+	AppConfigMap      map[string]string        `json:"appConfigMap,omitempty"`
 	//Sample string `json:"sample,omitempty"`
 }
 

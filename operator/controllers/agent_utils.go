@@ -50,8 +50,8 @@ func CreateDockerHostCronJob(crd *v1.DockerHost) (*v1batch.CronJob, error) {
 	return cronjob, nil
 }
 
-func CreateDockerComposeRunnerJob(crd *v1.CrdDefinition, action string) (*v1batch.Job, error) {
-	podSpec, _ := CreateDockerComposeRunnerPodSpec(crd.Name, action)
+func CreateDockerComposeRunnerJob(crd *v1.CrdDefinition, action string, configMapName string) (*v1batch.Job, error) {
+	podSpec, _ := CreateDockerComposeRunnerPodSpec(crd.Name, action, configMapName)
 	jobMinimal := InstantiateMinimalDockerComposeRunnerJob(crd.Name, NamespaceJobs)
 	jobMinimal.Labels = GetLabels(crd)
 	TTL := int32(30)
@@ -128,8 +128,7 @@ func AddHostConnectionVars(crd *v1.DockerHost, varList *[]apiV1.EnvVar) *[]apiV1
 	return varList
 }
 
-func CreateDockerComposeRunnerPodSpec(name, action string) (apiV1.PodSpec, error) {
-	configMapNMame := GenerateComposeRunnerConfigMapName(name)
+func CreateDockerComposeRunnerPodSpec(name, action, configMapNMame string) (apiV1.PodSpec, error) {
 	env := []apiV1.EnvVar{
 		{
 			Name: "DOCKER_CERT_PATH",
@@ -346,8 +345,7 @@ func checkCronJob(job *v1batch.CronJob) {
 	}
 }
 
-func CreateTLSDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.ConfigMap {
-	configMapName := GenerateComposeRunnerConfigMapName(crd.Name)
+func CreateTLSDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, configMapName string) *apiV1.ConfigMap {
 	crdConfig := crd.GetCrdDefinition()
 	labels := GetLabels(crdConfig)
 	configMap := &apiV1.ConfigMap{
@@ -373,8 +371,7 @@ func CreateTLSDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner) *apiV1.C
 	return configMap
 }
 
-func CreateSSHDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, sshUser string, hostIp string) *apiV1.ConfigMap {
-	configMapName := GenerateComposeRunnerConfigMapName(crd.Name)
+func CreateSSHDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, sshUser string, hostIp string, configMapName string) *apiV1.ConfigMap {
 	crdConfig := crd.GetCrdDefinition()
 	labels := GetLabels(crdConfig)
 	configMap := &apiV1.ConfigMap{
@@ -401,7 +398,7 @@ func CreateSSHDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, sshUser 
 }
 
 func GenerateComposeRunnerConfigMapName(crdName string) string {
-	return crdName + "-dcr-cm"
+	return crdName + "-dcr-cm-" + RandStringRunes(4)
 }
 
 func GetLabels(crdConfig *v1.CrdDefinition) map[string]string {

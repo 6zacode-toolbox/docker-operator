@@ -82,6 +82,8 @@ spec:
                       type: string
                   type: object
                 type: array
+              configMapName:
+                type: string
               instanced:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
@@ -145,6 +147,10 @@ spec:
           status:
             description: DockerHostStatus defines the observed state of DockerHost
             properties:
+              appConfigMap:
+                additionalProperties:
+                  type: string
+                type: object
               containers:
                 items:
                   properties:
