@@ -240,6 +240,28 @@ func CreateDockerComposeRunnerPodSpec(name, action, configMapNMame string) (apiV
 				},
 			},
 		},
+		{
+			Name: "DOCKERHOST_NAME",
+			ValueFrom: &apiV1.EnvVarSource{
+				ConfigMapKeyRef: &apiV1.ConfigMapKeySelector{
+					LocalObjectReference: apiV1.LocalObjectReference{
+						Name: configMapNMame,
+					},
+					Key: "DOCKERHOST_NAME",
+				},
+			},
+		},
+		{
+			Name: "OPERATOR_NAMESPACE",
+			ValueFrom: &apiV1.EnvVarSource{
+				ConfigMapKeyRef: &apiV1.ConfigMapKeySelector{
+					LocalObjectReference: apiV1.LocalObjectReference{
+						Name: configMapNMame,
+					},
+					Key: "OPERATOR_NAMESPACE",
+				},
+			},
+		},
 		//To get from a Secret froom vault
 		{
 			Name: "GITHUB_TOKEN",
@@ -355,17 +377,19 @@ func CreateTLSDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, configMa
 			Labels:    labels,
 		},
 		Data: map[string]string{
-			"DOCKER_CERT_PATH":  "/certs",
-			"DOCKER_HOST":       "tcp://" + crd.Spec.HostIP + ":2376",
-			"DOCKER_TLS_VERIFY": "1",
-			"HOST_IP":           crd.Spec.HostIP,
-			"COMPOSE_FILE":      crd.Spec.ComposeFile,
-			"REPO_ADDRESS":      crd.Spec.RepoAddress,
-			"EXECUTION_PATH":    crd.Spec.ExecutionPath,
-			"CRD_API_VERSION":   crdConfig.APIVersion,
-			"CRD_NAMESPACE":     crdConfig.Namespace,
-			"CRD_NAME":          crdConfig.Name,
-			"CRD_RESOURCE":      crdConfig.Resource,
+			"DOCKER_CERT_PATH":   "/certs",
+			"DOCKER_HOST":        "tcp://" + crd.Spec.HostIP + ":2376",
+			"DOCKER_TLS_VERIFY":  "1",
+			"HOST_IP":            crd.Spec.HostIP,
+			"COMPOSE_FILE":       crd.Spec.ComposeFile,
+			"REPO_ADDRESS":       crd.Spec.RepoAddress,
+			"EXECUTION_PATH":     crd.Spec.ExecutionPath,
+			"CRD_API_VERSION":    crdConfig.APIVersion,
+			"CRD_NAMESPACE":      crdConfig.Namespace,
+			"CRD_NAME":           crdConfig.Name,
+			"CRD_RESOURCE":       crdConfig.Resource,
+			"DOCKERHOST_NAME":    crd.Spec.ResourceOwner,
+			"OPERATOR_NAMESPACE": NamespaceJobs,
 		},
 	}
 	return configMap
@@ -381,17 +405,19 @@ func CreateSSHDockerComposeRunnerConfigMap(crd *v1.DockerComposeRunner, sshUser 
 			Labels:    labels,
 		},
 		Data: map[string]string{
-			"DOCKER_CERT_PATH":  "",
-			"DOCKER_HOST":       "ssh://" + sshUser + "@" + hostIp,
-			"DOCKER_TLS_VERIFY": "",
-			"HOST_IP":           crd.Spec.HostIP,
-			"COMPOSE_FILE":      crd.Spec.ComposeFile,
-			"REPO_ADDRESS":      crd.Spec.RepoAddress,
-			"EXECUTION_PATH":    crd.Spec.ExecutionPath,
-			"CRD_API_VERSION":   crdConfig.APIVersion,
-			"CRD_NAMESPACE":     crdConfig.Namespace,
-			"CRD_NAME":          crdConfig.Name,
-			"CRD_RESOURCE":      crdConfig.Resource,
+			"DOCKER_CERT_PATH":   "",
+			"DOCKER_HOST":        "ssh://" + sshUser + "@" + hostIp,
+			"DOCKER_TLS_VERIFY":  "",
+			"HOST_IP":            crd.Spec.HostIP,
+			"COMPOSE_FILE":       crd.Spec.ComposeFile,
+			"REPO_ADDRESS":       crd.Spec.RepoAddress,
+			"EXECUTION_PATH":     crd.Spec.ExecutionPath,
+			"CRD_API_VERSION":    crdConfig.APIVersion,
+			"CRD_NAMESPACE":      crdConfig.Namespace,
+			"CRD_NAME":           crdConfig.Name,
+			"CRD_RESOURCE":       crdConfig.Resource,
+			"DOCKERHOST_NAME":    crd.Spec.ResourceOwner,
+			"OPERATOR_NAMESPACE": NamespaceJobs,
 		},
 	}
 	return configMap

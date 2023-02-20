@@ -147,7 +147,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(instance *toolv1.DockerC
 	if instance.Spec.ResourceOwner != "" {
 		err := r.Get(context.TODO(), types.NamespacedName{Name: instance.Spec.ResourceOwner, Namespace: instance.Namespace}, dockerHostCrd)
 		if err != nil {
-			log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s", instance.Namespace, instance.Name))
+			log.Log.Error(err, fmt.Sprintf("Getting connection details: %s/%s", instance.Namespace, instance.Name))
 			return err
 		} else {
 			if dockerHostCrd.Spec.SSHConnection != (v1.SSHConnection{}) {
@@ -163,7 +163,7 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(instance *toolv1.DockerC
 	cms := &apiV1.ConfigMap{}
 	err := r.DeleteAllOf(context.TODO(), cms, client.InNamespace(definition.Namespace), client.MatchingLabels(GetLabels(definition)), client.GracePeriodSeconds(5))
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s", definition.Namespace, definition.Name))
+		log.Log.Error(err, fmt.Sprintf("Error deleting configmaps from previous runs: %s/%s", definition.Namespace, definition.Name))
 		return err
 	}
 	configMap := &apiV1.ConfigMap{}
@@ -181,14 +181,14 @@ func (r *DockerComposeRunnerReconciler) RunComposeUpJob(instance *toolv1.DockerC
 	}
 	err = r.DefineConfigMapName(instance, configMapName, *dockerHostCrd)
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating configmap %s/%s", instance.Namespace, configMap))
+		log.Log.Error(err, fmt.Sprintf("Error defining configmap on CRDs %s/%s", instance.Namespace, configMap))
 		return err
 
 	}
 
 	err = r.CreateJob(instance.GetCrdDefinition(), toolv1.COMPOSE_ACTION_UP, configMapName)
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s", instance.Namespace, instance.Name))
+		log.Log.Error(err, fmt.Sprintf("Error creating job dcr job %s/%s", instance.Namespace, instance.Name))
 		return err
 	}
 	return nil
@@ -288,13 +288,13 @@ func (r *DockerComposeRunnerReconciler) CreateJob(definition *toolv1.CrdDefiniti
 	//create new job
 	job, err := CreateDockerComposeRunnerJob(definition, action, configMapName)
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job object %s/%s", definition.Namespace, job.Name))
+		log.Log.Error(err, fmt.Sprintf("Error creating DCR JOB: %s/%s", definition.Namespace, job.Name))
 		return err
 
 	}
 	err = r.Create(context.TODO(), job)
 	if err != nil {
-		log.Log.Error(err, fmt.Sprintf("Error creating job %s/%s", definition.Namespace, job.Name))
+		log.Log.Error(err, fmt.Sprintf("Error creating job: %s/%s", definition.Namespace, job.Name))
 		return err
 
 	}
