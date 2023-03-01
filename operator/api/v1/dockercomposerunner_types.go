@@ -41,6 +41,7 @@ type DockerComposeRunnerSpec struct {
 type DockerComposeRunnerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	ResourceOwner string          `json:"resourceOwner,omitempty"`
 	Instanced     bool            `json:"instanced,omitempty"`
 	Validated     bool            `json:"validated,omitempty"`
 	ConfigMapName string          `json:"configMapName,omitempty"`

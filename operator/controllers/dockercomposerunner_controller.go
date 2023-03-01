@@ -200,6 +200,7 @@ func (r *DockerComposeRunnerReconciler) DefineConfigMapName(instance *toolv1.Doc
 		Status: v1.DockerComposeRunnerStatus{
 			ConfigMapName: configMapName,
 			Validated:     true,
+			ResourceOwner: instance.Spec.ResourceOwner,
 		},
 	}
 
@@ -309,7 +310,8 @@ func (r *DockerComposeRunnerReconciler) CreateDockerComposeRunnerJob(desiredJob 
 	patchInstance := &toolv1.DockerComposeRunner{
 		ObjectMeta: instance.ObjectMeta,
 		Status: v1.DockerComposeRunnerStatus{
-			Instanced: true,
+			Instanced:     true,
+			ResourceOwner: instance.Spec.ResourceOwner,
 		},
 	}
 	//err = r.Status().Update(context.TODO(), patchInstance)
